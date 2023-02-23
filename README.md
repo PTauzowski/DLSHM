@@ -1,1 +1,1 @@
-# DLSHM Deep Learning Structural Healt Monitoring Package
+# Python package for Deep Learning and its application in Structural Health Monitoring (DLSHM)
