@@ -2,14 +2,14 @@
 
 W Python 
 
-...sh
+```Python
 for student in students:
     print( student)
-...
+```
 
 a JavaScript
-...sh
+```JavaScript
 for( let student of students) {
  console.log( student);
 }
-...
+```
