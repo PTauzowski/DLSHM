@@ -31,7 +31,22 @@ The collection contains artificial viaduct dataset images in <code>1920x1024 png
 + <code>ICSHM_RGBD.py</code> - segmentation tast with x[640,320,4] (rgb + depth) -> y[640,320,8] structural part segmentation with depth channel 
 + <code>ICSHM_RGBHybrid.py</code> -hybrid model -  first depth estimation model is predicted and result together with rgb is input for RGBD prediction.
 
-To perform the above-mentioned tasks, a deep neural network in the U-net  architecture was used. Implementation taken from Keras package, the source one can find here: [keras-models](https://github.com/karolzak/keras-unet/blob/master/keras_unet/models/)
+To perform the above-mentioned tasks, a deep neural network in the U-net architecture was used. Implementation taken from Keras package, the source one can find here: [keras-models](https://github.com/karolzak/keras-unet/blob/master/keras_unet/models/)
+
+Four layers was used in the U-net model so resolution should be divided by 16, therefier images was stretched to resoludion 640x320. Below commen elements of each file was briefly described:
+
+```Python
+info_file = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
+```
+At first the <code>files_train.csv</code> have to be analysed to find out which files will be used in particular task. Different set is used for structural parts segmentation different for damage recognition, but this two sets have non empty intersection. To avoid duplicates <code>files_train.csv</code> contains iformation about proper composition of training set for particular task.
+
+```Python
+imgRGB_conv  = ICSHM_RGB_Converter(resX,resY)
+data_manager = ICSHMDataManager(images_source_path )
+data_manager.convertDataToNumpyFormat(imgRGB_conv, train_pathRGB )
+```
+As the art of preparing data for the tensorflow package teaches us, it is worth storing data for learning not in graphic files, but as matrices of the NumPy package. For this purpose, an object of the <code>Converter</code> class is created which defines how single image have to be transformed. Then <code>DataManager</code> class object is defined which is resposible for all data images manipulation
+
 
 W Python 
 
