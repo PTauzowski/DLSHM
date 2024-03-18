@@ -1,4 +1,4 @@
-# Python package for Deep Learning and its application in Structural Health Monitoring (DLSHM)
+# Deep Learning and its application in Structural Health Monitoring (DLSHM)
 
 The purpose of the package is to perform semantic segmentation of viaduct photos in order to mark structural parts
 
