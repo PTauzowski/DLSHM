@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 
 setuptools.setup(
     name="dlshm",
-    version="0.1.0"
+    version="0.1.0",
     description="dlshm",
     url="https://github.com/PTauzowski/DLSHM",
     author="Piotr Tauzowski",
@@ -24,6 +24,6 @@ setuptools.setup(
         # "tensorflow>=1.2.0",
         # "pyyaml",
     ],
-    python_requires='>=3.9'
+    python_requires='>=3.8'
 )
 
