@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import pandas as pd
-from DLImages.convert import *
-from DLModels.trainer import *
-from DLGenerators.generators import *
+from dlimages.convert import *
+from dlmodels.trainer import *
+from dlgenerators.generators import *
 import tensorflow as tf
 from keras_unet.models import custom_unet
 
@@ -80,4 +80,4 @@ class testRGBHybridPostprocess:
         plt.close(fig)
 
 
-trainerRGBD.testModel(testRGBHybridPostprocess(trainerRGB.model,trainerRGBD.model,trainerDepth.model))
+trainerRGBD.test_model(testRGBHybridPostprocess(trainerRGB.model, trainerRGBD.model, trainerDepth.model))

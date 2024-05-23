@@ -6,9 +6,9 @@ from ICSHM.DataProcessing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RG
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import pandas as pd
-from DLImages.convert import *
-from DLModels.trainer import *
-from DLGenerators.generators import *
+from dlimages.convert import *
+from dlmodels.trainer import *
+from dlgenerators.generators import *
 import tensorflow as tf
 from keras_unet.models import custom_unet
 from matplotlib import image as mpimg, pyplot as plt
@@ -34,7 +34,7 @@ nLAYERS=4
 imgRGB_conv  = ICSHM_RGB_Converter(resX,resY)
 imgRGBD_conv  = ICSHM_RGBD_Converter(resX,resY)
 data_manager = ICSHMDataManager(images_source_path )
-data_manager.convertDataToNumpyFormat(imgRGBD_conv, train_pathRGBD )
+data_manager.convert_data_to_numpy_format(imgRGBD_conv, train_pathRGBD)
 
 model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, num_classes=nCLASSES, output_activation="softmax")
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss="categorical_crossentropy",  metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(8)])
@@ -59,4 +59,5 @@ def testRGBPostprocess(filename, x, y, result):
     plt.savefig(filename)
     del fig
 
-trainer.testModel(testRGBPostprocess)
+trainer.test_model(testRGBPostprocess)
+

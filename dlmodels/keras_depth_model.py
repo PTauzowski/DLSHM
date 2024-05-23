@@ -24,7 +24,7 @@ def visualize_depth_map(samples, test=False, model=None):
 
 class DownscaleBlock(layers.Layer):
     def __init__(
-        self, filters, kernel_size=(3, 3), padding="same", strides=1, **kwargs
+            self, filters, kernel_size=(3, 3), padding="same", strides=1, **kwargs
     ):
         super().__init__(**kwargs)
         self.convA = layers.Conv2D(filters, kernel_size, strides, padding)
@@ -52,7 +52,7 @@ class DownscaleBlock(layers.Layer):
 
 class UpscaleBlock(layers.Layer):
     def __init__(
-        self, filters, kernel_size=(3, 3), padding="same", strides=1, **kwargs
+            self, filters, kernel_size=(3, 3), padding="same", strides=1, **kwargs
     ):
         super().__init__(**kwargs)
         self.us = layers.UpSampling2D((2, 2))
@@ -80,7 +80,7 @@ class UpscaleBlock(layers.Layer):
 
 class BottleNeckBlock(layers.Layer):
     def __init__(
-        self, filters, kernel_size=(3, 3), padding="same", strides=1, **kwargs
+            self, filters, kernel_size=(3, 3), padding="same", strides=1, **kwargs
     ):
         super().__init__(**kwargs)
         self.convA = layers.Conv2D(filters, kernel_size, strides, padding)
@@ -146,9 +146,9 @@ class DepthEstimationModel(tf.keras.Model):
         l1_loss = tf.reduce_mean(tf.abs(target - pred))
 
         loss = (
-            (self.ssim_loss_weight * ssim_loss)
-            + (self.l1_loss_weight * l1_loss)
-            + (self.edge_loss_weight * depth_smoothness_loss)
+                (self.ssim_loss_weight * ssim_loss)
+                + (self.l1_loss_weight * l1_loss)
+                + (self.edge_loss_weight * depth_smoothness_loss)
         )
 
         return loss

@@ -8,14 +8,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import cv2 as cv
 
-from DLModels.KerasDepthModel import DepthEstimationModel
+from dlmodels.keras_depth_model import DepthEstimationModel
 from ICSHM import DataProcessing
 from ICSHM.DataProcessing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RGBD_Converter, ICSHM_Depth_Converter
 
 import pandas as pd
-from DLImages.convert import *
-from DLModels.trainer import *
-from DLGenerators.generators import *
+from dlimages.convert import *
+from dlmodels.trainer import *
+from dlgenerators.generators import *
 import tensorflow as tf
 from keras_unet.models import custom_unet
 
@@ -41,7 +41,7 @@ LR = 0.001
 
 imgDepth_converter  = ICSHM_Depth_Converter(resX,resY)
 data_manager = ICSHMDataManager(images_source_path )
-data_manager.convertDataToNumpyFormat(imgDepth_converter, train_pathDepth )
+data_manager.convert_data_to_numpy_format(imgDepth_converter, train_pathDepth)
 
 model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, num_classes=nCLASSES, output_activation="sigmoid")
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LR), loss="mean_absolute_error",  metrics=[tf.keras.metrics.MeanAbsoluteError(), tf.keras.metrics.MeanIoU(2)])
@@ -68,5 +68,5 @@ def testDepthPostprocess(filename, x, y, result):
     plt.savefig(filename)
     del fig
 
-trainer.testModel(testDepthPostprocess)
+trainer.test_model(testDepthPostprocess)
 
