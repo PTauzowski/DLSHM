@@ -46,18 +46,3 @@ data_manager = ICSHMDataManager(images_source_path )
 data_manager.convertDataToNumpyFormat(imgRGB_conv, train_pathRGB )
 ```
 As the art of preparing data for the tensorflow package teaches us, it is worth storing data for learning not in graphic files, but as matrices of the NumPy package. For this purpose, an object of the <code>Converter</code> class is created which defines how single image have to be transformed. Then <code>DataManager</code> class object is defined which is resposible for all data images manipulation
-
-
-W Python 
-
-```Python
-for student in students:
-    print( student)
-```
-
-a JavaScript
-```JavaScript
-for( let student of students) {
- console.log( student);
-}
-```
