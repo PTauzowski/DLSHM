@@ -36,28 +36,26 @@ def sequenced_gener_test(pathName, data_generator, scope=-1):
 
 
 class DataSource:
-    def __init__(self, sourceDir, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True ):
+    def __init__(self, sourceDir, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True, cross_validation=1 ):
         self.sourceDir=sourceDir
         self.trainRatio=trainRatio
         self.validationRatio=validationRatio
         self.shuffle=shuffle
-        self.sampleSize = sampleSize
-        self.init_data()
-
-    def init_data(self):
+        self.sampleSize=sampleSize
+        self.cross_validation=cross_validation
         if self.sourceDir == "":
             print("Source path can't be empty")
-            return False
+            return
         if not os.path.isdir(self.sourceDir):
             print("Source path :", self.sourceDir + "Is not valid directory name. Processing aborted.")
-            return False
+            return
         print('Reading images from ', self.sourceDir)
         self.files = glob.glob(self.sourceDir + '\\*.*')
         random.shuffle(self.files)
         print('Number of images :', len(self.files))
         if  len(self.files)==0:
             print("Source dir can't be empty")
-            return False
+            return
         self.total_sample_size = len(self.files)
         if self.sampleSize < 0:
             self.used_sample_size = self.total_sample_size
@@ -66,7 +64,7 @@ class DataSource:
         self.train_samples_size = int(round(self.used_sample_size * self.trainRatio))
         self.validation_samples_size = int(round(self.used_sample_size * self.validationRatio))
         self.test_samples_size = self.used_sample_size - self.train_samples_size - self.validation_samples_size
-        return  True
+
 
     def get_train_set_files(self):
         return self.files[:self.train_samples_size]

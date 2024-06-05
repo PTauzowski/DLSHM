@@ -74,9 +74,9 @@ def predictDMGsegmentation(x, y):
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-#imgRGB_conv  = ICSHM_RGB_Converter(resX,resY)
-#data_manager = ICSHMDataManager(images_source_path )
-#data_manager.convertDataToNumpyFormat(imgRGB_conv, train_pathRGB )
+imgRGB_conv  = ICSHM_RGB_Converter(resX,resY)
+data_manager = ICSHMDataManager(images_source_path )
+data_manager.convertDataToNumpyFormat(imgRGB_conv, train_pathRGB )
 
 #model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, filters=nFILTERS, num_classes=nCLASSES, output_activation="softmax")
 #model = custom_vgg19(input_shape=(resY,resX,3))

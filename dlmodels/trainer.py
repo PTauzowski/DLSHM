@@ -7,7 +7,6 @@ import numpy as np
 from matplotlib import image as mpimg, pyplot as plt
 import keras.backend as K
 
-matplotlib.use('Agg')
 
 def psnr(super_resolution, high_resolution):
     """Compute the peak signal-to-noise ratio, measures quality of image."""
@@ -16,7 +15,7 @@ def psnr(super_resolution, high_resolution):
     return psnr_value
 
 class DLTrainer:
-    def __init__(self,model_name, model, task_path, data_source, trainGen, validGen, testGen, batch_size, idim, odim, n_channels, n_classes ):
+    def __init__(self,model_name, model, task_path, data_source ):
         self.task_path=task_path
         self.model_name=model_name
         if model==None:
@@ -28,17 +27,6 @@ class DLTrainer:
                 print('Model ', model_name, 'was NOT found')
         self.model=model
         self.data_source=data_source
-        self.idim=idim
-        self.odim=odim
-        self.n_channels=n_channels
-        self.n_class=n_classes
-        #self.train_gen = trainGen(data_source.getTrainSetFiles(), batch_size=batch_size, dim=dim, n_channels=n_channels, n_classes=n_classes,  class_weights=class_weights, shuffle=True )
-        #self.validation_gen = validGen(data_source.getValidationSetFiles(), batch_size=batch_size, dim=dim, n_channels=n_channels,n_classes=n_classes, class_weights=class_weights, shuffle=True )
-        #self.testGen = testGen(data_source.getTestSetFiles(),batch_size=1, dim=dim, n_channels=n_channels,n_classes=n_classes, class_weights=class_weights, shuffle=True )
-        if data_source != None:
-            self.train_gen = trainGen(data_source.get_train_set_files(), batch_size=batch_size, idim=idim, odim=odim, n_channels=n_channels, n_classes=n_classes, shuffle=True)
-            self.validation_gen = validGen(data_source.get_validation_set_files(), batch_size=batch_size, idim=idim, odim=odim, n_channels=n_channels, n_classes=n_classes, shuffle=True)
-            self.testGen = testGen(data_source.get_test_set_files(), batch_size=1, idim=idim, odim=odim, n_channels=n_channels, n_classes=n_classes, shuffle=True)
 
     def save_model(self):
         model_path = os.path.join(self.task_path, 'Models')
@@ -47,45 +35,36 @@ class DLTrainer:
             os.makedirs(model_path)
         self.model.save(os.path.join(model_path, self.model_name)+'.h5')
 
-    def train(self,epochs,batch_size):
+    def train(self, train_gen, validation_gen, epochs,batch_size):
         training_time_start = time.process_time()
-        self.history = self.model.fit(self.train_gen, batch_size=batch_size, epochs=epochs, validation_data=self.validation_gen)
+        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen)
         self.save_model()
         self.training_time=time.process_time() - training_time_start
 
-    def plot_training_history(self):
-        loss = self.history.history['loss']
-        val_loss = self.history.history['val_loss']
-        plt.figure()
-        plt.plot(self.history.epoch, loss, 'r', label='Training loss')
-        plt.plot(self.history.epoch, val_loss, 'bo', label='Validation loss')
-        plt.title('Training and Validation Loss')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss Value')
-        plt.legend()
-        model_path = os.path.join(self.task_path, 'Models')
-        plt.savefig(os.path.join(model_path, self.model_name)+'_training.png')
-
-    def plot_training_accuracy(self):
-        fig, axis = plt.subplots(1, 2, figsize=(20, 5))
-        axis[0].plot(self.history.history.history["loss"], color='r', label='train loss')
-        axis[0].plot(self.history.history.history["val_loss"], color='b', label='dev loss')
-        axis[0].set_title('Loss Comparison')
-        axis[0].legend()
-        axis[1].plot(self.history.history.history["accuracy"], color='r', label='train accuracy')
-        axis[1].plot(self.history.history.history["val_accuracy"], color='b', label='dev accuracy')
-        axis[1].set_title('Accuracy Comparison')
-        axis[1].legend()
-
-    def test_model_images(self, postprocess, extension='png'):
+    def test_model(self, test_gen, postprocess, extension='png'):
         test_path=os.path.join(self.task_path, 'TestResults')
         test_path = os.path.join(test_path, self.model_name)
         if not os.path.exists(test_path):
             os.makedirs(test_path)
         index=1
-        N=len(self.testGen)
+        N=len(test_gen)
         print('Testing model:',self.model_name)
-        for x,y in self.testGen:
+        for x,y in test_gen:
+            data_y = self.model.predict(x)
+            postprocess(os.path.join(test_path, 'test_file_'+str(index))+'.'+extension,x,y,data_y)
+            index=index+1
+            if index % 100 == 0:
+                print('iter=', index, '/', N, flush=True)
+
+    def test_model_on_images(self, test_gen, postprocess, extension='png'):
+        test_path=os.path.join(self.task_path, 'TestResults')
+        test_path = os.path.join(test_path, self.model_name)
+        if not os.path.exists(test_path):
+            os.makedirs(test_path)
+        index=1
+        N=len(test_gen)
+        print('Testing model:',self.model_name)
+        for x,y in test_gen:
             data_y = self.model.predict(x)
             cv.imwrite(os.path.join(test_path, 'test_file_T_' + str(index))+'.'+extension, postprocess(x[0,],data_y[0,])*255)
             cv.imwrite(os.path.join(test_path, 'test_file_Y_' + str(index)) + '.' + extension, y[0,]*255)
@@ -94,31 +73,16 @@ class DLTrainer:
             if index % 100 == 0:
                 print('iter=', index, '/', N, flush=True)
 
-    def test_model(self, postprocess, extension='png'):
+
+    def test_model_weighted(self, test_gen, postprocess, extension='png'):
         test_path=os.path.join(self.task_path, 'TestResults')
         test_path = os.path.join(test_path, self.model_name)
         if not os.path.exists(test_path):
             os.makedirs(test_path)
         index=1
-        N=len(self.testGen)
+        N=len(test_gen)
         print('Testing model:',self.model_name)
-        for x,y in self.testGen:
-            data_y = self.model.predict(x)
-            postprocess(os.path.join(test_path, 'test_file_'+str(index))+'.'+extension,x,y,data_y)
-            index=index+1
-            if index % 100 == 0:
-                print('iter=', index, '/', N, flush=True)
-
-
-    def test_model_weighted(self, postprocess, extension='png'):
-        test_path=os.path.join(self.task_path, 'TestResults')
-        test_path = os.path.join(test_path, self.model_name)
-        if not os.path.exists(test_path):
-            os.makedirs(test_path)
-        index=1
-        N=len(self.testGen)
-        print('Testing model:',self.model_name)
-        for x,y,weights in self.testGen:
+        for x,y,weights in test_gen:
             data_y = self.model.predict(x)
             postprocess(os.path.join(test_path, 'test_file_'+str(index))+'.'+extension,x,y,data_y)
             index=index+1
@@ -146,6 +110,64 @@ class DLTrainer:
             index = index + 1
             if index % 100 == 0:
                 print('iter=', index, '/', N, flush=True)
+
+    def mosaic_predict(self, img_source_dir, idim, odim):
+        predictions_dir = os.path.join(self.task_path, 'mosaicPredictions')
+        if not os.path.exists(predictions_dir):
+            os.makedirs(predictions_dir)
+        prediction_path = os.path.join(predictions_dir, self.model_name)
+        if not os.path.exists(prediction_path):
+            os.makedirs(prediction_path)
+        index = 1
+        print('Predicting images from dir:', img_source_dir)
+        N = len(os.listdir(img_source_dir))
+        for filename in os.listdir(img_source_dir):
+            image= cv.imread(os.path.join(img_source_dir,filename))
+            nx = image.shape[1] // idim[0]
+            ny = image.shape[0] // idim[1]
+            x0 = (image.shape[1] - idim[0] * nx) // 2
+            y0 = (image.shape[0] - idim[1] * ny) // 2
+            data_x = np.zeros((1,idim[1],idim[0],3),dtype=np.float32)
+            image_y = np.zeros((odim[1]*ny, odim[0]*nx,3),dtype=np.float32)
+            for l in range(0, ny):
+                for k in range(0, nx):
+                    data_x[0,] = image[y0+l*idim[1]:y0+(l+1)*idim[1],x0+k*idim[0]:x0+(k+1)*idim[0],:]/255
+                    data_y = self.model.predict(data_x)
+                    image_y[l*odim[1]:(l+1)*odim[1], k*odim[0]:(k+1)*odim[0], :] = data_y[0,]
+            try:
+                cv.imwrite(os.path.join(prediction_path, filename) + '_X.png', image)
+                cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', image_y * 255)
+            except Exception as e:
+                print('Cant export ' + filename + ' because', e)
+            index = index + 1
+            if index % 100 == 0:
+                print('iter=', index, '/', N, flush=True)
+
+    def plot_training_history(self):
+        loss = self.history.history['loss']
+        val_loss = self.history.history['val_loss']
+        plt.figure()
+        plt.plot(self.history.epoch, loss, 'r', label='Training loss')
+        plt.plot(self.history.epoch, val_loss, 'bo', label='Validation loss')
+        plt.title('Training and Validation Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss Value')
+        plt.legend()
+        model_path = os.path.join(self.task_path, 'Models')
+        plt.savefig(os.path.join(model_path, self.model_name)+'_training.png')
+
+    def plot_training_accuracy(self):
+        fig, axis = plt.subplots(1, 2, figsize=(20, 5))
+        axis[0].plot(self.history.history.history["loss"], color='r', label='train loss')
+        axis[0].plot(self.history.history.history["val_loss"], color='b', label='dev loss')
+        axis[0].set_title('Loss Comparison')
+        axis[0].legend()
+        axis[1].plot(self.history.history.history["accuracy"], color='r', label='train accuracy')
+        axis[1].plot(self.history.history.history["val_accuracy"], color='b', label='dev accuracy')
+        axis[1].set_title('Accuracy Comparison')
+        axis[1].legend()
+
+
 
     def compute_measures(self, img_source, inputImgReader, postprocess):
         predictions_dir=os.path.join(self.task_path, 'Predictions')
@@ -231,37 +253,7 @@ class DLTrainer:
             if index % 100 == 0:
                 print('iter=', index, '/', N, flush=True)
 
-    def mosaic_predict(self, img_source_dir, idim, odim):
-        predictions_dir = os.path.join(self.task_path, 'mosaicPredictions')
-        if not os.path.exists(predictions_dir):
-            os.makedirs(predictions_dir)
-        prediction_path = os.path.join(predictions_dir, self.model_name)
-        if not os.path.exists(prediction_path):
-            os.makedirs(prediction_path)
-        index = 1
-        print('Predicting images from dir:', img_source_dir)
-        N = len(os.listdir(img_source_dir))
-        for filename in os.listdir(img_source_dir):
-            image= cv.imread(os.path.join(img_source_dir,filename))
-            nx = image.shape[1] // idim[0]
-            ny = image.shape[0] // idim[1]
-            x0 = (image.shape[1] - idim[0] * nx) // 2
-            y0 = (image.shape[0] - idim[1] * ny) // 2
-            data_x = np.zeros((1,idim[1],idim[0],3),dtype=np.float32)
-            image_y = np.zeros((odim[1]*ny, odim[0]*nx,3),dtype=np.float32)
-            for l in range(0, ny):
-                for k in range(0, nx):
-                    data_x[0,] = image[y0+l*idim[1]:y0+(l+1)*idim[1],x0+k*idim[0]:x0+(k+1)*idim[0],:]/255
-                    data_y = self.model.predict(data_x)
-                    image_y[l*odim[1]:(l+1)*odim[1], k*odim[0]:(k+1)*odim[0], :] = data_y[0,]
-            try:
-                cv.imwrite(os.path.join(prediction_path, filename) + '_X.png', image)
-                cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', image_y * 255)
-            except Exception as e:
-                print('Cant export ' + filename + ' because', e)
-            index = index + 1
-            if index % 100 == 0:
-                print('iter=', index, '/', N, flush=True)
+
 
 
 
