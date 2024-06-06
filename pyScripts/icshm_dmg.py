@@ -49,7 +49,7 @@ model = DeeplabV3Plus((resY,resX,nCHANNELS), nCLASSES)
 model.summary()
 
 class_weights=[1.0, 0.125, 0.25]
-dataSource = DataSource( train_pathDMG, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True )
+dataSource = DataSource(train_pathDMG, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
 #trainer = DLTrainer( DMGmodel_name, model, task_path, dataSource, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, BATCH_SIZE, (resY,resX), nCHANNELS, nCLASSES)
 trainer = DLTrainer( DMGmodel_name, None, task_path, dataSource, DataGeneratorFromNumpyFilesWeighted, DataGeneratorFromNumpyFilesWeighted, DataGeneratorFromNumpyFilesWeighted, BATCH_SIZE, (resY,resX), nCHANNELS, nCLASSES, class_weights)
 #model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LR), loss="categorical_crossentropy",  metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(nCLASSES)])

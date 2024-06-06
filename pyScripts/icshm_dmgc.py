@@ -45,7 +45,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss="cat
 model.summary()
 
 class_weights=[1.0, 0.1]
-dataSource = DataSource( train_pathDMGC, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True )
+dataSource = DataSource(train_pathDMGC, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
 #trainer = DLTrainer( DMGmodel_name, model, task_path, dataSource, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, BATCH_SIZE, (resY,resX), nCHANNELS, nCLASSES)
 trainer = DLTrainer( DMGmodel_name, None, task_path, dataSource, DataGeneratorFromNumpyFilesWeighted, DataGeneratorFromNumpyFilesWeighted, DataGeneratorFromNumpyFilesWeighted, BATCH_SIZE, (resY,resX), nCHANNELS, nCLASSES, class_weights)
 #trainer.train(EPOCHS,BATCH_SIZE)

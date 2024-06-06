@@ -40,7 +40,7 @@ model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, num_c
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss="categorical_crossentropy",  metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(8)])
 model.summary()
 
-dataSource = DataSource( train_pathRGBD, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True )
+dataSource = DataSource(train_pathRGBD, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
 trainer = DLTrainer( model_name, None, task_path, dataSource, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, BATCH_SIZE, (resY,resX), nCHANNELS, nCLASSES)
 
 model=trainer.model

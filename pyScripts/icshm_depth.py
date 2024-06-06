@@ -47,7 +47,7 @@ model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, num_c
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LR), loss="mean_absolute_error",  metrics=[tf.keras.metrics.MeanAbsoluteError(), tf.keras.metrics.MeanIoU(2)])
 model.summary()
 
-dataSource = DataSource( train_pathDepth, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True )
+dataSource = DataSource(train_pathDepth, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
 trainer = DLTrainer( model_name, None, task_path, dataSource, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, BATCH_SIZE, (resY,resX), nCHANNELS, nCLASSES)
 
 #trainer.train(EPOCHS,BATCH_SIZE)

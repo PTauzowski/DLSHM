@@ -15,7 +15,7 @@ def psnr(super_resolution, high_resolution):
     return psnr_value
 
 class DLTrainer:
-    def __init__(self,model_name, model, task_path, data_source ):
+    def __init__(self,model_name, model, task_path ):
         self.task_path=task_path
         self.model_name=model_name
         if model==None:
@@ -26,7 +26,6 @@ class DLTrainer:
             else:
                 print('Model ', model_name, 'was NOT found')
         self.model=model
-        self.data_source=data_source
 
     def save_model(self):
         model_path = os.path.join(self.task_path, 'Models')

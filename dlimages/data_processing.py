@@ -183,6 +183,7 @@ class ICSHMDataManager:
         self.data_csv = pd.read_csv(os.path.join( tokaido_path,'files_train.csv' ), header=None, index_col=None, delimiter=',')
         col_valid = self.data_csv[csv_ind]
         self.idx_valid = [i for i in range(len(col_valid)) if col_valid[i]]
+        self.filenames = [self.data_csv.iloc[i][0] for i in range(len(col_valid)) if col_valid[i]]
 
     def convert_data_to_numpy_format(self, process, dataset_path):
         isExist = os.path.exists(dataset_path)
@@ -207,6 +208,9 @@ class ICSHMDataManager:
                     print('Cant import ' + imageName + ' because:', err )
                 if i % 100 == 0:
                     print('iter=', i, '/', N, flush=True)
+
+    def get_data(self):
+        return self.filenames
 
 
 

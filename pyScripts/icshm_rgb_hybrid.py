@@ -33,9 +33,9 @@ nCHANNELS=3
 nCLASSES=8
 nLAYERS=4
 
-dataSourceRGB = DataSource( train_pathRGB, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True )
-dataSourceRGBD = DataSource( train_pathRGBD, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True )
-dataSourceDepth = DataSource( train_pathDepth, trainRatio=0.8, validationRatio=0.15, sampleSize=-1, shuffle=True )
+dataSourceRGB = DataSource(train_pathRGB, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
+dataSourceRGBD = DataSource(train_pathRGBD, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
+dataSourceDepth = DataSource(train_pathDepth, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
 trainerRGB = DLTrainer( RGBmodel_name, None, task_path, dataSourceRGB, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, BATCH_SIZE, (resY,resX), 3, nCLASSES)
 trainerRGBD = DLTrainer( RGBDmodel_name, None, task_path, dataSourceRGBD, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, BATCH_SIZE, (resY,resX), 4, nCLASSES)
 trainerDepth = DLTrainer( Depthmodel_name, None, task_path, dataSourceDepth, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, DataGeneratorFromNumpyFiles, BATCH_SIZE, (resY,resX), 3, 1)
