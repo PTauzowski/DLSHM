@@ -13,6 +13,12 @@ input_shape = (32, 32, 3)
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
 
+# x_train=np.zeros((1000,640,320,3))
+# y_train=np.zeros((1000,1))
+# x_test=np.zeros((100,640,320,3))
+# y_test=np.zeros((100,1))
+
+
 print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
 print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
 
@@ -206,7 +212,7 @@ def run_experiment(model):
 
 
 vit_classifier = create_vit_classifier()
-vit_classifier.summary()
+# vit_classifier.summary()
 history = run_experiment(vit_classifier)
 
 
