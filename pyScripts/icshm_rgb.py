@@ -19,8 +19,8 @@ from skimage.transform import resize
 from keras_unet.models import custom_unet
 
 
-# task_path = 'H:/DL/ICSHM'
-task_path = '/Users/piotrek/Data/DocumentsUnix/Prezentacje/ICSHM'
+task_path = 'H:/DL/ICSHM'
+#task_path = '/Users/piotrek/Data/DocumentsUnix/Prezentacje/ICSHM'
 images_source_path = 'H:/DL/ICSHM/DataSets/Tokaido_dataset_share'
 data_info_file = 'H:/DL/ICSHM/DataSets/Tokaido_dataset_share/files_train.csv'
 train_path_rgb = os.path.join(task_path, 'TrainSets/RGBbig')
