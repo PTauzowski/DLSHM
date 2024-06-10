@@ -324,7 +324,6 @@ def gener_training_pair_transform_to_numpy(pathName, data_generator, scope=-1):
         if k>N:
             break
 
-
 def image_components_presentation(imagePath, outputDir):
     image_arrayRGB = cv.imread(imagePath)
     #image_arrayB, image_arrayG, image_arrayR = cv.split(image_arrayRGB)

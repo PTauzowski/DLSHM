@@ -18,7 +18,6 @@ input_shape = (32, 32, 3)
 # x_test=np.zeros((100,640,320,3))
 # y_test=np.zeros((100,1))
 
-
 print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
 print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
 

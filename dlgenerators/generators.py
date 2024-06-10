@@ -34,7 +34,6 @@ def sequenced_gener_test(pathName, data_generator, scope=-1):
         if k>N:
             break
 
-
 class DataSource:
     pass
 def __init__(self, sourceDir, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True, cross_validation_folds=1):
@@ -71,7 +70,6 @@ def __init__(self, sourceDir, train_ratio=0.8, validation_ratio=0.15, sampleSize
     self.train_samples_size = int(round(self.used_sample_size * self.trainRatio))
     self.validation_samples_size = int(round(self.used_sample_size * self.validation_ratio))
     self.test_samples_size = self.used_sample_size - self.train_samples_size - self.validation_samples_size
-
 
 def get_train_set_files(self):
 

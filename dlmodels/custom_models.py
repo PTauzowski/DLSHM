@@ -2,7 +2,6 @@ import tensorflow as tf
 from keras import Input, applications, initializers, layers, Model
 from keras.layers import AveragePooling2D, Conv2D, BatchNormalization, UpSampling2D, Concatenate,Conv2DTranspose
 
-
 def custom_vgg19( input_shape):
     model = tf.keras.applications.VGG19 (include_top=False, input_shape=input_shape, classes=3)
     x = model.layers[-1].output

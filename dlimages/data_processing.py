@@ -84,8 +84,6 @@ class ICSHM_RGB_FULL_Converter:
 
         return self.x, self.y
 
-
-
 class ICSHM_RGBD_Converter:
     def __init__(self,resX,resY):
         self.resX=resX
