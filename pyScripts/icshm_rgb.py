@@ -31,7 +31,7 @@ rgb_model_name= 'ICSHM_RGB_DeepLabV3_E100'
 
 # info_file = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
 
-epochs=100
+EPOCHS=100
 batch_size=32
 res_x=640
 res_y=320
@@ -80,7 +80,7 @@ def predictDMGsegmentation(x, y):
 
 imgRGB_conv  = ICSHM_RGB_Converter(res_x, res_y)
 data_manager = ICSHMDataManager( images_source_path )
-data_manager.convertDataToNumpyFormat(imgRGB_conv, train_path_rgb)
+data_manager.convertDataToNumpyFormat( imgRGB_conv, train_path_rgb )
 dataset = data_manager.get_data()
 
 
