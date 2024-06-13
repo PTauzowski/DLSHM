@@ -42,7 +42,7 @@ def __init__(self, sourceDir, train_ratio=0.8, validation_ratio=0.15, sampleSize
     self.validation_ratio=validation_ratio
     self.shuffle=shuffle
     self.sampleSize=sampleSize
-    self.cross_validation_folds=cross_validation_folds
+    self.CROSS_VALIDATION_FOLDS=cross_validation_folds
     if cross_validation_folds>1:
         self.test_ratio = 1-train_ratio-validation_ratio
         self.validation_ratio=train_ratio/cross_validation_folds

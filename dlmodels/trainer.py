@@ -34,7 +34,7 @@ class DLTrainer:
             os.makedirs(model_path)
         self.model.save(os.path.join(model_path, self.model_name)+'.h5')
 
-    def train(self, train_gen, validation_gen, epochs,batch_size):
+    def train(self, train_gen, validation_gen, epochs, batch_size ):
         training_time_start = time.process_time()
         self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen)
         self.save_model()
