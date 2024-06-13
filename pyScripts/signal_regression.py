@@ -1,9 +1,7 @@
 
 import numpy as np
-import tensorflow as tf
-#from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Reshape, Conv1D, UpSampling1D
 import matplotlib.pyplot as plt
+from tensorflow.keras import layers
 
 def generate_sinusoidal_data(num_samples, input_length, output_length, num_sinusoids=3):
     X = np.zeros((num_samples, input_length))
