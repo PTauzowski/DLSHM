@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 #from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Conv1D, UpSampling1D
+import matplotlib.pyplot as plt
 
 def generate_sinusoidal_data(num_samples, input_length, output_length, num_sinusoids=3):
     X = np.zeros((num_samples, input_length))
@@ -62,3 +63,31 @@ model.summary()
 
 # Train the model
 model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2)
+
+
+# Predict using the trained model
+sample_index = 0  # Choose a sample to visualize
+X_sample = X_train[sample_index].reshape(1, -1)
+y_true = y_train[sample_index]
+y_pred = model.predict(X_sample).flatten()
+
+# Plot the input signal, true output signal, and predicted output signal
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 3, 1)
+plt.plot(X_sample.flatten(), label='Input Signal')
+plt.title('Input Signal')
+plt.legend()
+
+plt.subplot(1, 3, 2)
+plt.plot(y_true, label='True Output Signal')
+plt.title('True Output Signal')
+plt.legend()
+
+plt.subplot(1, 3, 3)
+plt.plot(y_pred, label='Predicted Output Signal')
+plt.title('Predicted Output Signal')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
