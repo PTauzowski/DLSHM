@@ -93,8 +93,8 @@ plt.title('True output signal')
 plt.legend()
 
 plt.subplot(1, 2, 2)
-plt.plot(y_true, label='True signal (dense sampled)')
-plt.plot(y_pred, label='Predicted output signal (dense sampled)')
+plt.plot(y_true, label='True signal (densely sampled)')
+plt.plot(y_pred, label='Predicted output signal (densely sampled)')
 plt.title('Predicted + true output signal')
 plt.legend()
 
