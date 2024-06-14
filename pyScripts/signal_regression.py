@@ -59,6 +59,7 @@ def create_model(input_length=128, output_length=4096):
 
     return model
 
+IS_TRAINING_MODE = False
 num_samples = 5000
 input_length = 64
 output_length = 4096
@@ -67,9 +68,12 @@ model = create_model(input_length, output_length)
 model.summary()
 
 # Train the model
-#model.fit(X_train, y_train, epochs=20, batch_size=16, validation_split=0.2, shuffle=True)
-#model.save('signals_model.h5')
-model = tf.keras.models.load_model('signals_model.h5')
+
+if IS_TRAINING_MODE:
+    model.fit(X_train, y_train, epochs=20, batch_size=16, validation_split=0.2, shuffle=True)
+    model.save('signals_model.h5')
+else:
+    model = tf.keras.models.load_model('signals_model.h5')
 
 # Predict using the trained model
 X_sample_test, y_true_test = generate_sinusoidal_data(num_samples, input_length, output_length,5)
