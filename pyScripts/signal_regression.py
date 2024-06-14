@@ -84,19 +84,15 @@ y_true = y_true_test[sample_index]
 y_pred = model.predict(X_sample).flatten()
 
 # Plot the input signal, true output signal, and predicted output signal
-plt.figure(figsize=(15, 5))
+plt.figure(figsize=(10, 5))
 
-plt.subplot(1, 3, 1)
-plt.plot(X_sample.flatten(), label='Input signal (rarely sampled)')
-plt.title('Input signal')
-plt.legend()
-
-plt.subplot(1, 3, 2)
-plt.plot(y_true, label='True signal (dense sampled)')
+plt.subplot(1, 2, 1)
+plt.plot(np.linspace(0, 2 * np.pi, output_length), y_true, label='True Output Signal (densely sampled)')
+plt.plot(np.linspace(0, 2 * np.pi, input_length), X_sample.flatten(), 'o', label='Input Signal (rarely sampled)')
 plt.title('True output signal')
 plt.legend()
 
-plt.subplot(1, 3, 3)
+plt.subplot(1, 2, 2)
 plt.plot(y_true, label='True signal (dense sampled)')
 plt.plot(y_pred, label='Predicted output signal (dense sampled)')
 plt.title('Predicted + true output signal')
