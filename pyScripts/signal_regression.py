@@ -121,9 +121,9 @@ def create_dilated_conv_model_with_time(input_length=128, output_length=4096):
 
     return model
 
-IS_TRAINING_MODE = True
+IS_TRAINING_MODE = False
 LEARNING_RATE = 0.001
-num_samples =2000
+num_samples =20000
 input_length = 128
 output_length = 4096
 X_train, y_train = generate_sinusoidal_data_with_time(num_samples, input_length, output_length,3)
@@ -157,23 +157,22 @@ plt.tight_layout()
 plt.savefig('output_plot.svg', format='svg')
 plt.show()
 
-model = create_dilated_conv_model_with_time(input_length, output_length)
-model.summary()
-
 # Train the model
-
+model=None
 if IS_TRAINING_MODE:
-    model.fit(X_train, y_train, epochs=20, batch_size=16, validation_split=0.2, shuffle=True)
-    model.save('signals_model_2.h5')
+    model = create_dilated_conv_model_with_time(input_length, output_length)
+    model.summary()
+    model.fit(X_train, y_train, epochs=30, batch_size=32, validation_split=0.2, shuffle=True)
+    model.save('signals_model.h5')
 else:
-    model = tf.keras.models.load_model('signals_model_2.h5')
+    model = tf.keras.models.load_model('signals_model.h5')
 
 # Predict using the trained model
 X_sample_test, y_true_test = generate_sinusoidal_data(num_samples, input_length, output_length,3)
 
 sample_index = 20  # Choose a sample to visualize
-X_sample = X_sample_test[sample_index].reshape(1, -1)
-y_true = y_true_test[sample_index]
+X_sample = X_sample_test[sample_index,:,1]
+y_true = y_true_test[sample_index,:,1]
 
 y_pred = model.predict(X_sample).flatten()
 
@@ -181,14 +180,14 @@ y_pred = model.predict(X_sample).flatten()
 plt.figure(figsize=(10, 5))
 
 plt.subplot(1, 2, 1)
-plt.plot(np.linspace(0, 2 * np.pi, output_length), y_true, label='True Output Signal (densely sampled)')
-plt.plot(np.linspace(0, 2 * np.pi, input_length), X_sample.flatten(), 'o', label='Input Signal (rarely sampled)')
+plt.plot(y_true_test[sample_index,:,0], y_true, label='True Output Signal (densely sampled)')
+plt.plot(X_sample_test[sample_index,:,0], X_sample, 'o', label='Input Signal (rarely sampled)')
 plt.title('True output signal')
 plt.legend()
 
 plt.subplot(1, 2, 2)
-plt.plot(y_true, label='True signal (densely sampled)')
-plt.plot(y_pred, label='Predicted output signal (densely sampled)')
+plt.plot(y_true_test[sample_index,:,0], y_true, label='True signal (densely sampled)')
+plt.plot(y_pred[sample_index,:,0], y_pred[sample_index,:,1], label='Predicted output signal (densely sampled)')
 plt.title('Predicted + true output signal')
 plt.legend()
 
