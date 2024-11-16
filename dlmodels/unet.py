@@ -21,9 +21,6 @@ from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import concatenate
 from tensorflow.keras.losses import binary_crossentropy
 
-
-
-
 def encoder_mini_block(inputs, n_filters=32, dropout_prob=0.3, max_pooling=True):
     """
     This block uses multiple convolution layers, max pool, relu activation to create an architecture for learning.
