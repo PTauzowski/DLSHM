@@ -6,16 +6,16 @@ from ICSHM.DataProcessing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RG
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import pandas as pd
-from dlimages.convert import *
-from dlmodels.custom_models import *
-from dlmodels.trainer import *
-from dlgenerators.generators import *
+from dlshm.dlimages.convert import *
+from dlshm.dlmodels.custom_models import *
+from dlshm.dlmodels.trainer import *
+from dlshm.dlgenerators.generators import *
 import tensorflow as tf
 from keras_unet.models import custom_unet
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, Reshape
 from tensorflow.keras.models import Model
 
-from dlgenerators.generators import *
+from dlshm.dlgenerators.generators import *
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import image as mpimg, pyplot as plt

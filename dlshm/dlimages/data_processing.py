@@ -6,7 +6,7 @@ from PIL import Image
 import pandas as pd
 from matplotlib import image as mpimg, pyplot as plt
 
-from dlimages.convert import rgb2labnorm, labnorm2rgb
+from dlshm.dlimages.convert import rgb2labnorm, labnorm2rgb
 
 
 class ICSHM_RGB_Converter:

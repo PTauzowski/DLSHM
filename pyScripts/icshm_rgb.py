@@ -3,15 +3,15 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import cv2 as cv
 import keras.backend as K
 
-from dlimages import data_processing
-from dlimages.data_processing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter
+from dlshm.dlimages import data_processing
+from dlshm.dlimages.data_processing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter
 from dlmodels.unet import u_net_compiled
 
 import pandas as pd
-from dlimages.convert import *
-from dlmodels.trainer import *
-from dlmodels.custom_models import *
-from dlgenerators.generators import *
+from dlshm.dlimages.convert import *
+from dlshm.dlmodels.trainer import *
+from dlshm.dlmodels.custom_models import *
+from dlshm.dlgenerators.generators import *
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, Reshape
 from tensorflow.keras.models import Model

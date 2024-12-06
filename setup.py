@@ -21,8 +21,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        # "tensorflow>=1.2.0",
-        # "pyyaml",
     ],
     python_requires='>=3.8'
 )
