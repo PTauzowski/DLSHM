@@ -1,5 +1,12 @@
 import numpy as np
 import tensorflow as tf
+print(tf.__version__)
+
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
+from tensorflow import keras
+from tensorflow.keras import layers
 
 # Example data
 X = np.random.rand(100, 3)  # 100 samples, each with 3 features
