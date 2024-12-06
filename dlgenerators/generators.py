@@ -54,7 +54,7 @@ class DataSource:
             print("Source path :", self.sourceDir + "Is not valid directory name. Processing aborted.")
             return
         print('Reading images from ', self.sourceDir)
-        self.files = glob.glob(self.sourceDir + '\\*.*')
+        self.files = glob.glob(self.sourceDir + '/*')
         if shuffle:
             random.shuffle(self.files)
         print('Number of images :', len(self.files))

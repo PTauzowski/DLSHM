@@ -19,29 +19,17 @@ from skimage.transform import resize
 from keras_unet.models import custom_unet
 
 
-TASK_PATH = 'H:/DL/ICSHM'
-#TASK_PATH = '/Users/piotrek/Data/DocumentsUnix/Prezentacje/ICSHM'
-IMAGES_SOURCE_PATH = 'H:/DL/ICSHM/DataSets/Tokaido_dataset_share'
-DATA_INFO_FILE = 'H:/DL/ICSHM/DataSets/Tokaido_dataset_share/files_train.csv'
-PREDICT_DIR=os.path.join(TASK_PATH, 'TestSets/V4photosWithMasks')
+TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
+IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
+TRAIN_PATH_RGB = os.path.join(TASK_PATH, 'TrainSet')
+PREDICT_DIR=os.path.join(TASK_PATH, 'Predictions')
 RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'
 
 # info_fil
 # e = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
 
-EPOCHS=100
-BATCH_SIZE=32
-RES_X=640
-RES_Y=320
-N_CHANNELS=3
-N_CLASSES=8
-N_LAYERS=5
-N_FILTERS=21
-LEARNING_RATE = 0.001
 
-TRAIN_DATA_RATIO=0.8
-TEST_DATA_RATIO=0.15
-CROSS_VALIDATION_FOLDS=6
 
 class segmentationRGBInputFileReader:
     def __init__(self, resX, resY ):
@@ -76,9 +64,23 @@ def predictDMGsegmentation(x, y):
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
+EPOCHS=100
+BATCH_SIZE=16
+RES_X=640
+RES_Y=320
+N_CHANNELS=3
+N_CLASSES=8
+N_LAYERS=5
+N_FILTERS=21
+LEARNING_RATE = 0.001
+
+TRAIN_DATA_RATIO=0.8
+TEST_DATA_RATIO=0.15
+CROSS_VALIDATION_FOLDS=6
+
 imgRGB_conv  = ICSHM_RGB_Converter(RES_X, RES_Y)
 data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH)
-data_manager.convertDataToNumpyFormat( imgRGB_conv, TRAIN_PATH_RGB )
+data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_PATH_RGB )
 
 #model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, filters=nFILTERS, num_classes=nCLASSES, output_activation="softmax")
 #model = custom_vgg19(input_shape=(resY,resX,3))
@@ -89,11 +91,14 @@ model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss="categorical_crossentropy", metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(N_CLASSES)])
 model.summary()
 
-dataSource = DataSource( TRAIN_PATH_RGB, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, cross_validation=6, shuffle=True)
-trainer = DLTrainer(RGB_MODEL_NAME, None, TASK_PATH)
+dataSource = DataSource( TRAIN_PATH_RGB, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
+trainer = DLTrainer(RGB_MODEL_NAME, model, TASK_PATH)
 
-# trainer.train(EPOCHS,BATCH_SIZE)
-# trainer.plotTrainingHistory()
+train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
+validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
+
+trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
+trainer.plotTrainingHistory()
 
 model=trainer.model
 
@@ -145,5 +150,5 @@ def testRGBPostprocess(filename, x, y, result):
     plt.savefig(filename)
     plt.close(fig)
 
-#trainer.testModel(testDMGsegmentation)
+trainer.testModel(testDMGsegmentation)
 trainer.compute_measures(PREDICT_DIR, segmentationRGBInputFileReader(RES_X, RES_Y), predictDMGsegmentation)

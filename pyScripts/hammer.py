@@ -5,8 +5,8 @@ import tensorflow as tf
 X = np.random.rand(100, 3)  # 100 samples, each with 3 features
 y = np.random.rand(100, 3)  # 100 samples, each with 3 target values
 
-from tf.keras.models import Sequential
-from tf.keras.layers import Dense
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
 
 
 def create_model():
