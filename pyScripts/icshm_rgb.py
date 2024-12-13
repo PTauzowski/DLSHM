@@ -18,20 +18,22 @@ from tensorflow.keras.models import Model
 from skimage.transform import resize
 from keras_unet.models import custom_unet
 
+import sys
 
-TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
-IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
+TASK_PATH = sys.argv[1] # processing danych
+
+#IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+#DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
 TRAIN_PATH_RGB = os.path.join(TASK_PATH, 'TrainSet')
 PREDICT_DIR=os.path.join(TASK_PATH, 'Predictions')
-RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'
+RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'   # nazwa pomocnicza katalogu z wynikami - zwiera jakies informacje o modelu, a modele sa ponizej, jako obiekty
 
 # info_fil
 # e = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
 
 
 
-class segmentationRGBInputFileReader:
+class segmentationRGBInputFileReader:   # wczytanie zrodlowych obrazkow
     def __init__(self, resX, resY ):
         self.x = np.zeros((resY, resX, 3), dtype=np.float32)
         self.resX=resX
@@ -45,7 +47,7 @@ class segmentationRGBInputFileReader:
         self.x[:, :, 2] = image_array[:, :, 2]
         return self.x
 
-def predictDMGsegmentation(x, y):
+def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     colors = np.array([
         [0, 0, 0],  # background
         [1, 0, 0],  # mask 1 (red)
@@ -78,9 +80,9 @@ TRAIN_DATA_RATIO=0.8
 TEST_DATA_RATIO=0.15
 CROSS_VALIDATION_FOLDS=6
 
-imgRGB_conv  = ICSHM_RGB_Converter(RES_X, RES_Y)
-data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH)
-data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_PATH_RGB )
+imgRGB_conv  = ICSHM_RGB_Converter(RES_X, RES_Y)    # konwersja na pliki npy - jak sa, to juz tego nie robi
+data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH) # na razie nie wiadomo
+data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_PATH_RGB )  # powinno sie nie uruchamiac, jak sa npy
 
 #model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, filters=nFILTERS, num_classes=nCLASSES, output_activation="softmax")
 #model = custom_vgg19(input_shape=(resY,resX,3))
@@ -88,20 +90,26 @@ data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_PATH_RGB )
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 #model=UNetCompiled(input_size=(resY,resX,nCHANNELS), n_filters=nFILTERS, n_classes=nCLASSES)
 
+
+# Kompilacja modelu i wyswitlenie informacji:
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss="categorical_crossentropy", metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(N_CLASSES)])
 model.summary()
 
+# Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
 dataSource = DataSource( TRAIN_PATH_RGB, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
-trainer = DLTrainer(RGB_MODEL_NAME, model, TASK_PATH)
+trainer = DLTrainer(RGB_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
+# Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
 train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
 validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
 
+# Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
 trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
 trainer.plotTrainingHistory()
 
-model=trainer.model
+model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
+# Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
 # print("Evaluate on test data")
 # results = model.evaluate(trainer.testGen, batch_size=1)
 # print("test results:", results)
@@ -150,5 +158,6 @@ def testRGBPostprocess(filename, x, y, result):
     plt.savefig(filename)
     plt.close(fig)
 
+# Testowanie na danych testowych (nie walidacyjnych)
 trainer.testModel(testDMGsegmentation)
 trainer.compute_measures(PREDICT_DIR, segmentationRGBInputFileReader(RES_X, RES_Y), predictDMGsegmentation)
