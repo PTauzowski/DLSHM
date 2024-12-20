@@ -24,8 +24,8 @@ TASK_PATH = sys.argv[1] # processing danych
 
 #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
 #DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
-TRAIN_PATH_RGB = os.path.join(TASK_PATH, 'TrainSet')
-PREDICT_DIR=os.path.join(TASK_PATH, 'Predictions')
+TRAIN_PATH_RGB = os.path.join(TASK_PATH, 'DL4SHM_trainSet')
+PREDICT_DIR=os.path.join(TASK_PATH, 'DL4SHM_predictions')
 RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'   # nazwa pomocnicza katalogu z wynikami - zwiera jakies informacje o modelu, a modele sa ponizej, jako obiekty
 
 # info_fil

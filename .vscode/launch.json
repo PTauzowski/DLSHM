@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "C:\Users\vostr\Datasets\DL4SHM_Tokaido_Dataset"
+                "F:\Datasets\Tokaido_Dataset"
             ]
         }
     ]
