@@ -5,7 +5,7 @@ import keras.backend as K
 
 from dlshm.dlimages import data_processing
 from dlshm.dlimages.data_processing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter
-from dlmodels.unet import u_net_compiled
+from dlshm.dlmodels.unet import u_net_compiled
 
 import pandas as pd
 from dlshm.dlimages.convert import *
@@ -22,10 +22,10 @@ import sys
 
 TASK_PATH = sys.argv[1] # processing danych
 
-#IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+IMAGES_SOURCE_PATH = 'F:/Datasets/Tokaido_Dataset'
 #DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
-TRAIN_PATH_RGB = os.path.join(TASK_PATH, 'DL4SHM_trainSet')
-PREDICT_DIR=os.path.join(TASK_PATH, 'DL4SHM_predictions')
+TRAIN_PATH_RGB = TASK_PATH + '/DL4SHM_trainSet'
+PREDICT_DIR= TASK_PATH + '/DL4SHM_predictions'
 RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'   # nazwa pomocnicza katalogu z wynikami - zwiera jakies informacje o modelu, a modele sa ponizej, jako obiekty
 
 # info_fil

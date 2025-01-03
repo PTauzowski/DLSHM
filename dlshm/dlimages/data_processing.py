@@ -178,7 +178,7 @@ class ICSHM_DMGC_Converter:
 class ICSHMDataManager:
     def __init__(self, tokaido_path, csv_ind=5 ):
         self.tokaido_path=tokaido_path
-        self.data_csv = pd.read_csv(os.path.join( tokaido_path,'files_train.csv' ), header=None, index_col=None, delimiter=',')
+        self.data_csv = pd.read_csv(tokaido_path + r'/files_train.csv', header=None, index_col=None, delimiter=',')
         col_valid = self.data_csv[csv_ind]
         self.idx_valid = [i for i in range(len(col_valid)) if col_valid[i]]
         self.filenames = [self.data_csv.iloc[i][0] for i in range(len(col_valid)) if col_valid[i]]

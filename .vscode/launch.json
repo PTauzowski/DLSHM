@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "F:\Datasets\Tokaido_Dataset"
+                "F:/Datasets/Tokaido_Dataset"
             ]
         }
     ]
