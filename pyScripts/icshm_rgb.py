@@ -20,20 +20,20 @@ from keras_unet.models import custom_unet
 
 import sys
 
-TASK_PATH = sys.argv[1] # processing danych
+TASK_PATH = "F:/Datasets/Tokaido_Dataset" # sys.argv[1] 
 
 IMAGES_SOURCE_PATH = 'F:/Datasets/Tokaido_Dataset'
 #DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
 TRAIN_PATH_RGB = TASK_PATH + '/DL4SHM_trainSet'
 PREDICT_DIR= TASK_PATH + '/DL4SHM_predictions'
-RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'   # nazwa pomocnicza katalogu z wynikami - zwiera jakies informacje o modelu, a modele sa ponizej, jako obiekty
+RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'   # Auxiliary name of the catalog including the results. It contains some information aboute the model. Models are below (as objects).
 
 # info_fil
 # e = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
 
 
 
-class segmentationRGBInputFileReader:   # wczytanie zrodlowych obrazkow
+class segmentationRGBInputFileReader:   # Reading of the SOURCE images.
     def __init__(self, resX, resY ):
         self.x = np.zeros((resY, resX, 3), dtype=np.float32)
         self.resX=resX
@@ -66,8 +66,8 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=100
-BATCH_SIZE=16
+EPOCHS=5
+BATCH_SIZE=32
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
