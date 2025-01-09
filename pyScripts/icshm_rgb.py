@@ -20,12 +20,13 @@ from keras_unet.models import custom_unet
 
 import sys
 
-TASK_PATH = "F:/Datasets/Tokaido_Dataset" # sys.argv[1] 
+TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1] 
+results_path = "F:/Python/DL4SHM_results"
 
-IMAGES_SOURCE_PATH = 'F:/Datasets/Tokaido_Dataset'
+IMAGES_SOURCE_PATH = 'D:/Datasets/Tokaido_Dataset'
 #DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
 TRAIN_PATH_RGB = TASK_PATH + '/DL4SHM_trainSet'
-PREDICT_DIR= TASK_PATH + '/DL4SHM_predictions'
+PREDICT_DIR= results_path + '/DL4SHM_predictions'
 RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'   # Auxiliary name of the catalog including the results. It contains some information aboute the model. Models are below (as objects).
 
 # info_fil
@@ -67,7 +68,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     return result
 
 EPOCHS=5
-BATCH_SIZE=32
+BATCH_SIZE=50
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
