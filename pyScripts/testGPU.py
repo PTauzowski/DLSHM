@@ -2,6 +2,9 @@ import tensorflow as tf
 
 import tensorflow as tf
 
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 # Check if TensorFlow can access a GPU
 if tf.config.list_physical_devices('GPU'):
     print("GPU is available.")
