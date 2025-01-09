@@ -20,10 +20,11 @@ from keras_unet.models import custom_unet
 
 import sys
 
-TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1] 
-results_path = "F:/Python/DL4SHM_results"
+TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
+TASK_PATH = '/home/piotrek/Computations/Ai/ICSHM'
+results_path = "/home/piotrek/Computations/Ai/ICSHM/results"
 
-IMAGES_SOURCE_PATH = 'D:/Datasets/Tokaido_Dataset'
+IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
 #DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
 TRAIN_PATH_RGB = TASK_PATH + '/DL4SHM_trainSet'
 PREDICT_DIR= results_path + '/DL4SHM_predictions'
@@ -31,7 +32,6 @@ RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'   # Auxiliary name of the catalog inc
 
 # info_fil
 # e = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
-
 
 
 class segmentationRGBInputFileReader:   # Reading of the SOURCE images.
@@ -68,7 +68,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     return result
 
 EPOCHS=5
-BATCH_SIZE=50
+BATCH_SIZE=32
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
@@ -94,7 +94,7 @@ model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 
 # Kompilacja modelu i wyswitlenie informacji:
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss="categorical_crossentropy", metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(N_CLASSES)])
-model.summary()
+#model.summary()
 
 # Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
 dataSource = DataSource( TRAIN_PATH_RGB, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
@@ -106,7 +106,7 @@ validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files
 
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
 trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
-trainer.plotTrainingHistory()
+    trainer.plot_training_history()
 
 model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
@@ -115,7 +115,7 @@ model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w kome
 # results = model.evaluate(trainer.testGen, batch_size=1)
 # print("test results:", results)
 
-def testDMGsegmentation(pathname, x, y, result):
+def   testDMGsegmentation(pathname, x, y, result):
     path, filename = os.path.split(pathname)
     name, extension = os.path.splitext(filename)
     img_name=os.path.join(path,name+"_image")+extension
@@ -131,10 +131,10 @@ def testDMGsegmentation(pathname, x, y, result):
         [0.5, 0.5, 0.5],  # mask 7 (gray)
     ], dtype=np.float32)
 
-    accuracy =  np.mean( y == (result > 0.5).astype(np.int) )
+    accuracy =  np.mean( y == (result > 0.5).astype(int) )
     epsilon = K.epsilon()
-    y_pred = K.clip(result, epsilon, 1.0 - epsilon)
-    loss = K.mean(-K.sum(y * K.log(y_pred), axis=-1))
+    y_pred = tf.clip_by_value(result, epsilon, 1.0 - epsilon)
+    loss = tf.reduce_mean(-tf.reduce_sum(y * tf.math.log(y_pred), axis=-1))
 
     nmasks = y.shape[3]
     masks = colors[np.argmax(result, axis=-1)]
@@ -144,8 +144,8 @@ def testDMGsegmentation(pathname, x, y, result):
     blended = cv.addWeighted(masks[0,], 1-alpha, x[0,], alpha, 0)
     source_blended = cv.addWeighted(sourse_masks[0,], 1 - alpha, x[0,], alpha, 0)
     # Display the result in a window
-    cv.imwrite(pathname,blended*255)
-    cv.imwrite(img_name, source_blended*255)
+   # cv.imwrite(pathname,blended*255)
+    #  cv.imwrite(img_name, source_blended*255)
     print(name," accuracy = ",accuracy," loss = ", loss, "\n")
 
 def testRGBPostprocess(filename, x, y, result):
@@ -160,5 +160,6 @@ def testRGBPostprocess(filename, x, y, result):
     plt.close(fig)
 
 # Testowanie na danych testowych (nie walidacyjnych)
-trainer.testModel(testDMGsegmentation)
-trainer.compute_measures(PREDICT_DIR, segmentationRGBInputFileReader(RES_X, RES_Y), predictDMGsegmentation)
+test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
+#trainer.test_model(test_gen,testDMGsegmentation)
+#trainer.compute_measures(PREDICT_DIR, segmentationRGBInputFileReader(RES_X, RES_Y), testDMGsegmentation)
