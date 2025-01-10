@@ -28,11 +28,12 @@ CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'
 
 if User=='Mariusz':
     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
+    result_path = 'F:/Python/DL4SHM_results'
     TRAIN_IMAGES_PATH = TASK_PATH + '/' + 'DL4SHM_trainSet'
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
     IMAGES_SOURCE_PATH = 'D:/Datasets/Tokaido_Dataset'
-    PREDICT_DIR = 'F:/Python/DL4SHM_results/Predictions'
-    TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
+    PREDICT_DIR = result_path + '/' + 'Predictions'
+    TEST_PATH = result_path + '/' + 'Test'
 
 elif User=="Piotr":
     TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
