@@ -25,18 +25,23 @@ User='Mariusz'
 
 CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'
 
+
 if User=='Mariusz':
-     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
-     IMAGES_SOURCE_PATH = 'D:/Datasets/Tokaido_Dataset'
+    TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
+    TRAIN_IMAGES_PATH = TASK_PATH + '/' + 'DL4SHM_trainSet'
+    MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
+    IMAGES_SOURCE_PATH = 'D:/Datasets/Tokaido_Dataset'
+    PREDICT_DIR = 'F:/Python/DL4SHM_results/Predictions'
+    TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
     TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
     IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
+    TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSet'
+    TEST_PATH = MODEL_PATH + '/' + 'Test'
 
-MODEL_PATH=os.path.join( TASK_PATH, CURRENT_MODEL_NAME)
-TRAIN_IMAGES_PATH=os.path.join( TASK_PATH, 'TrainSet' )
-TEST_PATH=os.path.join( MODEL_PATH, 'Test' )
-PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
 
 # info_fil
 # e = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
