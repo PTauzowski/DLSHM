@@ -1,9 +1,9 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import cv2 as cv
-import keras.backend as K
+#import keras.backend as K
 
-from dlshm.dlimages import data_processing
+#from dlshm.dlimages import data_processing
 from dlshm.dlimages.data_processing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter
 from dlshm.dlmodels.unet import u_net_compiled
 
@@ -20,18 +20,26 @@ from keras_unet.models import custom_unet
 
 import sys
 
-TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1] 
-results_path = "F:/Python/DL4SHM_results"
+#User='Mariusz'
+User='Piotr'
 
-IMAGES_SOURCE_PATH = 'D:/Datasets/Tokaido_Dataset'
-#DATA_INFO_FILE = '/Users/piotrek/DataSets/Tokaido_dataset_share/files_train.csv'
-TRAIN_PATH_RGB = TASK_PATH + '/DL4SHM_trainSet'
-PREDICT_DIR= results_path + '/DL4SHM_predictions'
-RGB_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'   # Auxiliary name of the catalog including the results. It contains some information aboute the model. Models are below (as objects).
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'
+
+if User=='Mariusz':
+     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
+     IMAGES_SOURCE_PATH = 'D:/Datasets/Tokaido_Dataset'
+
+elif User=="Piotr":
+    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+
+MODEL_PATH=os.path.join( TASK_PATH, CURRENT_MODEL_NAME)
+TRAIN_IMAGES_PATH=os.path.join( TASK_PATH, 'TrainSet' )
+TEST_PATH=os.path.join( MODEL_PATH, 'Test' )
+PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
 
 # info_fil
 # e = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
-
 
 
 class segmentationRGBInputFileReader:   # Reading of the SOURCE images.
@@ -67,8 +75,13 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
+<<<<<<< HEAD
 EPOCHS=3
 BATCH_SIZE=50
+=======
+EPOCHS=5
+BATCH_SIZE=4
+>>>>>>> a5ed638d697eb690482f768a414c51781e68936b
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
@@ -83,7 +96,7 @@ CROSS_VALIDATION_FOLDS=6
 
 imgRGB_conv  = ICSHM_RGB_Converter(RES_X, RES_Y)    # konwersja na pliki npy - jak sa, to juz tego nie robi
 data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH) # na razie nie wiadomo
-data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_PATH_RGB )  # powinno sie nie uruchamiac, jak sa npy
+data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_IMAGES_PATH )  # powinno sie nie uruchamiac, jak sa npy
 
 # model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 # model = custom_vgg19(input_shape=(RES_Y,RES_X,3))
@@ -97,8 +110,8 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), l
 model.summary()
 
 # Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
-dataSource = DataSource( TRAIN_PATH_RGB, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
-trainer = DLTrainer(RGB_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
+dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True)
+trainer = DLTrainer(CURRENT_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
 # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
 train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
