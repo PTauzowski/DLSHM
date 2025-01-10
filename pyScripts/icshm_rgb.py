@@ -20,8 +20,8 @@ from keras_unet.models import custom_unet
 
 import sys
 
-#User='Mariusz'
-User='Piotr'
+User='Mariusz'
+#User='Piotr'
 
 CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'
 
@@ -75,13 +75,8 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-<<<<<<< HEAD
 EPOCHS=3
 BATCH_SIZE=50
-=======
-EPOCHS=5
-BATCH_SIZE=4
->>>>>>> a5ed638d697eb690482f768a414c51781e68936b
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
