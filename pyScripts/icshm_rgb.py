@@ -67,7 +67,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=20
+EPOCHS=3
 BATCH_SIZE=50
 RES_X=640
 RES_Y=320
@@ -85,11 +85,11 @@ imgRGB_conv  = ICSHM_RGB_Converter(RES_X, RES_Y)    # konwersja na pliki npy - j
 data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH) # na razie nie wiadomo
 data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_PATH_RGB )  # powinno sie nie uruchamiac, jak sa npy
 
-#model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, filters=nFILTERS, num_classes=nCLASSES, output_activation="softmax")
-#model = custom_vgg19(input_shape=(resY,resX,3))
-#model = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(resY,resX,nCHANNELS),  classes=nCLASSES, classifier_activation="softmax")
+# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+# model = custom_vgg19(input_shape=(RES_Y,RES_X,3))
+# model = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(resY,resX,nCHANNELS),  classes=nCLASSES, classifier_activation="softmax")
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-#model=UNetCompiled(input_size=(resY,resX,nCHANNELS), n_filters=nFILTERS, n_classes=nCLASSES)
+# model = u_net_compiled(input_size=(RES_Y,RES_X,N_CHANNELS), n_filters=N_FILTERS, n_classes=N_FILTERS)
 
 
 # Kompilacja modelu i wyswitlenie informacji:
