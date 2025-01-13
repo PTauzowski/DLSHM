@@ -15,7 +15,7 @@ def psnr(super_resolution, high_resolution):
     return psnr_value
 
 class DLTrainer:
-    def __init__(self,model_name, model, task_path ):
+    def __init__(self, model_name, model, task_path ):
         self.task_path=task_path
         self.model_name=model_name
         if model==None:
@@ -41,7 +41,7 @@ class DLTrainer:
         self.training_time=time.process_time() - training_time_start
 
     def test_model(self, test_gen, postprocess, extension='png'):
-        test_path=os.path.join(self.task_path, 'TestResults')
+        test_path = os.path.join(self.task_path, 'TestResults')
         test_path = os.path.join(test_path, self.model_name)
         if not os.path.exists(test_path):
             os.makedirs(test_path)

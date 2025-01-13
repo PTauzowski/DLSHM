@@ -28,12 +28,11 @@ CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'
 
 if User=='Mariusz':
     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
-    result_path = 'F:/Python/DL4SHM_results'
     TRAIN_IMAGES_PATH = TASK_PATH + '/' + 'DL4SHM_trainSet'
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
     IMAGES_SOURCE_PATH = 'D:/Datasets/Tokaido_Dataset'
-    PREDICT_DIR = result_path + '/' + 'Predictions'
-    TEST_PATH = result_path + '/' + 'Test'
+    PREDICT_DIR = 'F:/Python/DL4SHM_results/Predictions'
+    TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
     TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
@@ -81,7 +80,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=3
+EPOCHS=1
 BATCH_SIZE=50
 RES_X=640
 RES_Y=320
