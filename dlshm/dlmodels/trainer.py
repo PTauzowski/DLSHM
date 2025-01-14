@@ -7,6 +7,8 @@ import numpy as np
 from matplotlib import image as mpimg, pyplot as plt
 import keras.backend as K
 
+import datetime as dt
+
 
 def psnr(super_resolution, high_resolution):
     """Compute the peak signal-to-noise ratio, measures quality of image."""
@@ -36,7 +38,10 @@ class DLTrainer:
 
     def train(self, train_gen, validation_gen, epochs, batch_size ):
         training_time_start = time.process_time()
-        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen)
+        logs = "logs/" + dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+        tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs, histogram_freq = 1, profile_batch = '500,520')
+        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks = [tboard_callback])
+        # Create a TensorBoard callback
         self.save_model()
         self.training_time=time.process_time() - training_time_start
 
