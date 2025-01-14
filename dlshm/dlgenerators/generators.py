@@ -205,7 +205,7 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
                     
                     # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
                     # propozycje:
-                    tf.image.central_crop(image, central_fraction=0.5)
+                    tf.image.central_crop(X[i,], central_fraction=0.5)
 
 
         return X, Y
