@@ -115,18 +115,18 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE),
 # model.summary()
 
 # Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
-dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.6, validation_ratio=0.2, sampleSize=300, shuffle=True)
+dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.7, validation_ratio=0.1, sampleSize=-1, shuffle=True)
 trainer = DLTrainer(CURRENT_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
 # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
 train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
 validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
 
-print("Datasource + trainer + generator dancyh:", dt.datetime.now() - t0)
 
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
 trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
 
+print()
 
 trainer.plot_training_history()
 
