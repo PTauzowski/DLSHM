@@ -186,6 +186,30 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
         if self.shuffle == True:
             np.random.shuffle(self.indexes)
 
+ def augment_random_image_transformation(X, Y):
+
+    """Random flipping of the image (both vertical and horisontal) taking care on the seed - mask remains consistent with corresponding training image"""
+
+    seed = 42
+    rnI = tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32)
+    if rnI == 1:
+        Xout = tf.image.flip_left_right(X)
+        Yout = tf.image.flip_left_right(Y)
+    elif rnI == 2:
+        Xout = tf.image.flip_up_down(X)
+        Yout = tf.image.flip_up_down(Y)
+    elif rnI > 2:
+        angle = np.random.uniform(-30, 30)
+        (Xh, Xw) = X.shape[:2]
+        Xcenter = (Xw // 2, Xh // 2)
+        (Yh, Yw) = Y.shape[:2]
+        Ycenter = (Yw // 2, Yh // 2)
+        MX = cv2.getRotationMatrix2D(Xcenter, np.int32(angle), 1.0)
+        MY = cv2.getRotationMatrix2D(Ycenter, np.int32(angle), 1.0)
+        Xout = cv2.warpAffine(X, MX, (Xw, Xh))
+        Yout = cv2.warpAffine(Y, MY, (Yw, Yh))
+    return Xout, Yout
+        
     def __data_generation(self, list_IDs_temp):
         'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
         # Initialization
@@ -200,14 +224,12 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
                 if self.Augmentation:   # Data augmentation
 
                     # Quality changing (NOT applied to ground truth data):
-                    X[i,] = tf.image.random_brightness(np.load(f), max_delta=0.2).numpy()  # Random brightness
-                    X[i,] = tf.image.random_contrast(X[i,], lower=0.7, upper=1.3).numpy()  # Random contrast
+                    X[i,] = tf.image.random_brightness(np.load(f), max_delta=0.8).numpy()  # Random brightness
+                    X[i,] = tf.image.random_contrast(X[i,], lower=0.1, upper=1.9).numpy()  # Random contrast
                     
                     # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
-                    # propozycje:
-                    tf.image.central_crop(X[i,], central_fraction=0.5)
-
-
+                    X[i,], Y[i,] = augment_random_image_transformation(X[i,], Y[i,])
+        
         return X, Y
 
 class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
