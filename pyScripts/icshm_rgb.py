@@ -22,8 +22,8 @@ import sys
 
 # import datetime as dt
 
-User='Mariusz'
-#User='Piotr'
+#User='Mariusz'
+User='Piotr'
 
 CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E100'
 
