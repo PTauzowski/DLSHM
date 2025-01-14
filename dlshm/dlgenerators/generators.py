@@ -186,29 +186,29 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
         if self.shuffle == True:
             np.random.shuffle(self.indexes)
 
- def augment_random_image_transformation(X, Y):
+    def augment_random_image_transformation(X, Y):
 
-    """Random flipping of the image (both vertical and horisontal) taking care on the seed - mask remains consistent with corresponding training image"""
+        """Random flipping of the image (both vertical and horisontal) taking care on the seed - mask remains consistent with corresponding training image"""
 
-    seed = 42
-    rnI = tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32)
-    if rnI == 1:
-        Xout = tf.image.flip_left_right(X)
-        Yout = tf.image.flip_left_right(Y)
-    elif rnI == 2:
-        Xout = tf.image.flip_up_down(X)
-        Yout = tf.image.flip_up_down(Y)
-    elif rnI > 2:
-        angle = np.random.uniform(-30, 30)
-        (Xh, Xw) = X.shape[:2]
-        Xcenter = (Xw // 2, Xh // 2)
-        (Yh, Yw) = Y.shape[:2]
-        Ycenter = (Yw // 2, Yh // 2)
-        MX = cv2.getRotationMatrix2D(Xcenter, np.int32(angle), 1.0)
-        MY = cv2.getRotationMatrix2D(Ycenter, np.int32(angle), 1.0)
-        Xout = cv2.warpAffine(X, MX, (Xw, Xh))
-        Yout = cv2.warpAffine(Y, MY, (Yw, Yh))
-    return Xout, Yout
+        seed = 42
+        rnI = tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32)
+        if rnI == 1:
+            Xout = tf.image.flip_left_right(X)
+            Yout = tf.image.flip_left_right(Y)
+        elif rnI == 2:
+            Xout = tf.image.flip_up_down(X)
+            Yout = tf.image.flip_up_down(Y)
+        elif rnI > 2:
+            angle = np.random.uniform(-30, 30)
+            (Xh, Xw) = X.shape[:2]
+            Xcenter = (Xw // 2, Xh // 2)
+            (Yh, Yw) = Y.shape[:2]
+            Ycenter = (Yw // 2, Yh // 2)
+            MX = cv2.getRotationMatrix2D(Xcenter, np.int32(angle), 1.0)
+            MY = cv2.getRotationMatrix2D(Ycenter, np.int32(angle), 1.0)
+            Xout = cv2.warpAffine(X, MX, (Xw, Xh))
+            Yout = cv2.warpAffine(Y, MY, (Yw, Yh))
+        return Xout, Yout
         
     def __data_generation(self, list_IDs_temp):
         'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
