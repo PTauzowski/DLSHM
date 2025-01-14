@@ -204,10 +204,10 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
             Xcenter = (Xw // 2, Xh // 2)
             (Yh, Yw) = Y.shape[:2]
             Ycenter = (Yw // 2, Yh // 2)
-            MX = cv2.getRotationMatrix2D(Xcenter, np.int32(angle), 1.0)
-            MY = cv2.getRotationMatrix2D(Ycenter, np.int32(angle), 1.0)
-            Xout = cv2.warpAffine(X, MX, (Xw, Xh))
-            Yout = cv2.warpAffine(Y, MY, (Yw, Yh))
+            MX = cv.getRotationMatrix2D(Xcenter, np.int32(angle), 1.0)
+            MY = cv.getRotationMatrix2D(Ycenter, np.int32(angle), 1.0)
+            Xout = cv.warpAffine(X, MX, (Xw, Xh))
+            Yout = cv.warpAffine(Y, MY, (Yw, Yh))
         return Xout, Yout
         
     def __data_generation(self, list_IDs_temp):
