@@ -150,7 +150,7 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
     'Generates data for Keras'
 
     def __init__(self, files, batch_size=32, idim=(32, 32), odim=(32, 32), n_channels=3,
-                 n_classes=3, shuffle=True):
+                 n_classes=3, shuffle=True, Augmentation=False):
         'Initialization'
         self.idim = idim
         self.odim = odim
@@ -160,6 +160,7 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
         self.n_classes = n_classes
 
         self.shuffle = shuffle
+        self.Augmentation=Augmentation
         self.on_epoch_end()
 
     def __len__(self):
@@ -195,6 +196,17 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
             with open( ID, 'rb') as f:
                 X[i,] = np.load(f)
                 Y[i,] = np.load(f)
+
+                if self.Augmentation:   # Data augmentation
+
+                    # Quality changing (NOT applied to ground truth data):
+                    X[i,] = tf.image.random_brightness(np.load(f), max_delta=0.2).numpy()  # Random brightness
+                    X[i,] = tf.image.random_contrast(X[i,], lower=0.7, upper=1.3).numpy()  # Random contrast
+                    
+                    # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
+                    # propozycje:
+                    tf.image.central_crop(image, central_fraction=0.5)
+
 
         return X, Y
 

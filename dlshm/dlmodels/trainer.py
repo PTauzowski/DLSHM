@@ -39,8 +39,8 @@ class DLTrainer:
     def train(self, train_gen, validation_gen, epochs, batch_size ):
         training_time_start = time.process_time()
         # logs = "logs/" + dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-        tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs, histogram_freq = 1, profile_batch = '500,520')
-        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks = [tboard_callback])
+        # tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs, histogram_freq = 1, profile_batch = '500,520')
+        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen) # , callbacks = [tboard_callback])
         # Create a TensorBoard callback
         self.save_model()
         self.training_time=time.process_time() - training_time_start
