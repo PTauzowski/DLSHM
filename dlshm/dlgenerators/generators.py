@@ -194,13 +194,18 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
         Y = np.empty((self.batch_size, *self.odim, self.n_classes), dtype=np.float32)
         for i, ID in enumerate(list_IDs_temp):
             with open( ID, 'rb') as f:
-                if self.Augmentation:
+                X[i,] = np.load(f)
+                Y[i,] = np.load(f)
+
+                if self.Augmentation:   # Data augmentation
+
+                    # Quality changing (NOT applied to ground truth data):
                     X[i,] = tf.image.random_brightness(np.load(f), max_delta=0.2).numpy()  # Random brightness
                     X[i,] = tf.image.random_contrast(X[i,], lower=0.7, upper=1.3).numpy()  # Random contrast
-                    Y[i,] = np.load(f)
-                else:
-                    X[i,] = np.load(f)
-                    Y[i,] = np.load(f)
+                    
+                    # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
+                    # propozycje:
+                    tf.image.central_crop(image, central_fraction=0.5)
 
 
         return X, Y
