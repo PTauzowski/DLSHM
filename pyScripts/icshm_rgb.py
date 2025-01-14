@@ -119,8 +119,8 @@ dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.7, validation_ratio=0.
 trainer = DLTrainer(CURRENT_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
 # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
-train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
-validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
+train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES,Augmentation=True)
+validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES,Augmentation=False)
 
 
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
