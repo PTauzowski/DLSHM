@@ -30,7 +30,7 @@ def augment_random_image_transformation(X, Y):
 I1 = plt.imread('testIm1.jpg')
 I2 = plt.imread('testIm2.jpg')
 # I3 = tf.image.rotate(I1, 1, interpolation = 'bilinear', fill_mode='reflect')
-t0 = dt.datetime.nuw()
+t0 = dt.datetime.now()
 I3, I4 = augment_random_image_transformation(I1, I2)
 print("execution time:", dt.datetime.now() - t0, " s")
 f, axarr = plt.subplots(2,2)
