@@ -67,7 +67,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=20
+EPOCHS=5
 BATCH_SIZE=50
 RES_X=640
 RES_Y=320
@@ -107,7 +107,6 @@ validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
 trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
 trainer.plot_training_history()
-# trainer.plotTrainingHistory()
 
 model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
