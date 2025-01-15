@@ -132,8 +132,6 @@ trainer.plot_training_history()
 
 # ---
 
-# trainer.plotTrainingHistory()
-
 # model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
 # # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
