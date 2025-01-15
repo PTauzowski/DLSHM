@@ -37,9 +37,11 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    #TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSet'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
