@@ -5,13 +5,14 @@ import tensorflow as tf
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
+print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+
 # Check if TensorFlow can access a GPU
 if tf.config.list_physical_devices('GPU'):
     print("GPU is available.")
 else:
     print("GPU is not available.")
-
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+    exit(-1)
 
 cifar = tf.keras.datasets.cifar100
 (x_train, y_train), (x_test, y_test) = cifar.load_data()
