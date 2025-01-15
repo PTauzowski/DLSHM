@@ -190,7 +190,6 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
 
         """Random flipping of the image (both vertical and horisontal) taking care on the seed - mask remains consistent with corresponding training image"""
 
-        seed = 42
         rnI = tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32)
         if rnI == 1:
             Xout = tf.image.flip_left_right(X)
