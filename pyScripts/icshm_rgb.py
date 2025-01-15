@@ -43,7 +43,7 @@ elif User=="Piotr":
     #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
     IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
-    TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSet'
+    TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -85,7 +85,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     return result
 
 EPOCHS=3
-BATCH_SIZE=50
+BATCH_SIZE=64
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
@@ -127,8 +127,6 @@ validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files
 
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
 trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
-
-print()
 
 trainer.plot_training_history()
 
