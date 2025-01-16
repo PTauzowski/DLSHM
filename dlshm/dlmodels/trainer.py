@@ -23,7 +23,7 @@ class DLTrainer:
         if model==None:
             model_path = os.path.join(self.task_path, 'Models')
             if os.path.exists(model_path):
-                model = tf.keras.models.load_model(os.path.join(model_path, self.model_name+'.h5'),compile=False)
+                model = tf.keras.models.load_model(os.path.join(model_path, self.model_name+'.keras'),compile=False)
                 print('Model ',model_name,'was found and loaded')
             else:
                 print('Model ', model_name, 'was NOT found')
@@ -34,7 +34,7 @@ class DLTrainer:
         isExist = os.path.exists(model_path)
         if not isExist:
             os.makedirs(model_path)
-        self.model.save(os.path.join(model_path, self.model_name)+'.h5')
+        self.model.save(os.path.join(model_path, self.model_name)+'.keras')
 
     def train(self, train_gen, validation_gen, epochs, batch_size ):
         training_time_start = time.process_time()

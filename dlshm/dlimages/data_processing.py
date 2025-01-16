@@ -197,7 +197,14 @@ class ICSHMDataManager:
                     dmgName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx][2])
                     depthName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx][3])
 
-                    x, y = process(imageName, labName, dmgName, depthName );
+                    x, y = process(imageName, labName, dmgName, depthName )
+
+                    if i==0:
+                        self.class_pixel_counts = np.sum(y, axis=(0, 1))
+                        self.total_pixels = np.sum(self.class_pixel_counts)
+                    else:
+                        self.class_pixel_counts = self.class_pixel_counts + np.sum(y, axis=(0, 1))
+                        self.total_pixels = self.total_pixels + np.sum(self.class_pixel_counts)
 
                     with open(filename, 'wb') as f:
                         np.save(f, x)
@@ -206,12 +213,42 @@ class ICSHMDataManager:
                     print('Cant import ' + imageName + ' because:', err )
                 if i % 100 == 0:
                     print('iter=', i, '/', N, flush=True)
+            else:
+                f=open(filename, 'rb')
+                x=np.load(f)
+                y=np.load(f)
+                if i == 0:
+                    self.class_pixel_counts = np.sum(y, axis=(0, 1))
+                    self.total_pixels = np.sum(self.class_pixel_counts)
+                else:
+                    self.class_pixel_counts = self.class_pixel_counts + np.sum(y, axis=(0, 1))
+                    self.total_pixels = self.total_pixels + np.sum(self.class_pixel_counts)
 
-    def get_data(self):
+        self.weights = self.total_pixels / (self.class_pixel_counts + 1e-6)
+        self.weights =  self.weights / sum(self.weights)
+
+    #class_weights = total_pixels / (class_pixel_counts + 1e-8)  # Add a small value to prevent division by zero
+    #return class_weights / np.sum(class_weights)
+
+def get_data(self):
         return self.filenames
 
 
+def compute_class_weights(masks):
 
+    # Count the pixels for each class
+    class_pixel_counts = np.sum(masks, axis=(0, 1))
+
+    # Total pixels in the image
+    total_pixels = np.sum(class_pixel_counts)
+
+    # Compute weights (inverse frequency)
+    weights = total_pixels / (class_pixel_counts + 1e-6)  # Add small value to avoid division by zero
+
+    # Optionally normalize weights to sum to 1
+    weights = weights / np.sum(weights)
+
+    return weights
 
 
 
