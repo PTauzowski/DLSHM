@@ -25,7 +25,7 @@ import sys
 #User='Mariusz'
 User='Piotr'
 
-CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E200w'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E3w'
 
 if User=='Mariusz':
     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
@@ -36,13 +36,15 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
-    TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
+    #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
+    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -125,7 +127,7 @@ model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 
 # Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
 dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.7, validation_ratio=0.1, sampleSize=-1, shuffle=True)
-trainer = DLTrainer(CURRENT_MODEL_NAME, None, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
+trainer = DLTrainer(CURRENT_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
 model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
@@ -139,8 +141,8 @@ validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files
 test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
 
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
-#trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
-#trainer.plot_training_history()
+trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
+trainer.plot_training_history()
 
 # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
 #print("Evaluate on test data")
@@ -194,12 +196,9 @@ def test_dmg_segmentation(pathname, x, y, result):
 
  # Testowanie na danych testowych (nie walidacyjnych)
 trainer.test_model(test_gen,test_dmg_segmentation)
-#dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
+dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
 
-#with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
- #   dfs.to_excel(writer, sheet_name='ICSHM', index=False)
-  #  df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
+   dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+   df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
-            # DataFrame 2
-  #          df2 = pd.DataFrame({'C': [4, 5, 6], 'D': ['a', 'b', 'c']})
-   #         df2.to_excel(writer, sheet_name='Sheet1', index=False, startrow=0, startcol=5)
