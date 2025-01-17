@@ -246,15 +246,10 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
 
                 if self.Augmentation:   # Data augmentation
                     # Quality changing (NOT applied to ground truth data):
-<<<<<<< HEAD
                     X[i,] = augment_random_image_quality(X[i,])
                     
-=======
-                    X[i,] = tf.image.random_brightness(X[i,], max_delta=0.8).numpy()  # Random brightness
-                    X[i,] = tf.image.random_contrast(X[i,], lower=0.3, upper=1.5).numpy()  # Random contrast
->>>>>>> 15cfe6c3bd73f19cbd5d8ff180e3685919cbef1f
                     # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
-                    #X[i,], Y[i,] = augment_random_image_transformation(X[i,], Y[i,])
+                    X[i,], Y[i,] = augment_random_image_transformation(X[i,], Y[i,])
 
         return X, Y
 
