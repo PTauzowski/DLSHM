@@ -190,14 +190,17 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
 
         """Random flipping of the image (both vertical and horisontal) taking care on the seed - mask remains consistent with corresponding training image"""
 
-        rnI = tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32)
-        if rnI == 1:
-            Xout = tf.image.flip_left_right(X)
-            Yout = tf.image.flip_left_right(Y)
+        rnI = tf.random.uniform(shape=[], minval=0, maxval=3, dtype=tf.int32)
+        if rnI == 0:
+            Xout = X
+            Yout = Y
+        elif rnI == 1:
+            Xout = tf.image.flip_left_right(X).numpy()
+            Yout = tf.image.flip_left_right(Y).numpy()
         elif rnI == 2:
-            Xout = tf.image.flip_up_down(X)
-            Yout = tf.image.flip_up_down(Y)
-        elif rnI > 2:
+            Xout = tf.image.flip_up_down(X).numpy()
+            Yout = tf.image.flip_up_down(Y).numpy()
+        elif rnI == 3:
             angle = np.random.uniform(-30, 30)
             (Xh, Xw) = X.shape[:2]
             Xcenter = (Xw // 2, Xh // 2)
@@ -205,9 +208,30 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
             Ycenter = (Yw // 2, Yh // 2)
             MX = cv.getRotationMatrix2D(Xcenter, np.int32(angle), 1.0)
             MY = cv.getRotationMatrix2D(Ycenter, np.int32(angle), 1.0)
-            Xout = cv.warpAffine(X, MX, (Xw, Xh))
-            Yout = cv.warpAffine(Y, MY, (Yw, Yh))
+            Xout = cv.warpAffine(X, MX, (Xw, Xh)).numpy()
+            Yout = cv.warpAffine(Y, MY, (Yw, Yh)).numpy()
         return Xout, Yout
+    
+    def augment_random_image_quality(X):
+
+        """Random decreasing the quality of the image for the data augmentation purposes - applied ony to the image (withut affecting the corresponding mask)"""
+
+        rnI = tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32)
+        if rnI == 0:
+            Xout = X
+        elif rnI == 1:
+            Xout = tf.image.random_brightness(X, max_delta=0.8).numpy()       # Random brightness
+        elif rnI == 2:
+            Xout = tf.image.random_contrast(X, lower=0.1, upper=1.9).numpy()  # Random contrast
+        elif rnI == 3:
+            noiseIndic = f.random.uniform(shape=[], minval=0, maxval=1, dtype=tf.int32)
+            if noiseIndic == 0:
+                noise = tf.random.normal(shape=tf.shape(X), mean=0, stddev=50, dtype=tf.float32)
+            else:
+                noise = tf.cast(tf.random.uniform(shape=tf.shape(image), minval=0, maxval=1) < salt_prob, tf.float32) - tf.cast(tf.random.uniform(shape=tf.shape(image), minval=0, maxval=1) < pepper_prob, tf.float32) # salt - pepper
+            X = tf.add(X, noise)
+            Xout = tf.clip_by_value(X, 0.0, 1.0).numpy()  # Ensure pixel values are in [0, 1]
+        return Xout
         
     def __data_generation(self, list_IDs_temp):
         'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
@@ -222,8 +246,13 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
 
                 if self.Augmentation:   # Data augmentation
                     # Quality changing (NOT applied to ground truth data):
+<<<<<<< HEAD
+                    X[i,] = augment_random_image_quality(X[i,])
+                    
+=======
                     X[i,] = tf.image.random_brightness(X[i,], max_delta=0.8).numpy()  # Random brightness
                     X[i,] = tf.image.random_contrast(X[i,], lower=0.3, upper=1.5).numpy()  # Random contrast
+>>>>>>> 15cfe6c3bd73f19cbd5d8ff180e3685919cbef1f
                     # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
                     #X[i,], Y[i,] = augment_random_image_transformation(X[i,], Y[i,])
 
