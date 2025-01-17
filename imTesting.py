@@ -17,14 +17,14 @@ def augment_random_image_quality(X):
     elif rnI == 2:
         Xout = tf.image.random_contrast(X, lower=0.1, upper=1.9).numpy()  # Random contrast
     elif rnI == 3:
-        noiseIndic = tf.random.uniform(shape=[], minval=0, maxval=1, dtype=tf.int32)
-        if noiseIndic == 0:
-            noise = tf.random.normal(shape=tf.shape(X), mean=0, stddev=50, dtype=tf.float32)
-            X = X + noise
-        else:
-            salt = tf.cast(tf.random.uniform(shape=tf.shape(X), minval=0, maxval=1) < 50, tf.float32)
-            pepper =  tf.cast(tf.random.uniform(shape=tf.shape(X), minval=0, maxval=1) < 50, tf.float32) # salt - pepper
-            X = X + salt - pepper
+        # noiseIndic = tf.random.uniform(shape=[], minval=0, maxval=1, dtype=tf.int32)
+        # if noiseIndic == 0:
+        #     noise = tf.random.normal(shape=tf.shape(X), mean=0, stddev=50, dtype=tf.float32)
+        #     X = X + noise
+        # else:
+        salt = tf.cast(tf.random.uniform(shape=tf.shape(X), minval=0, maxval=1) < 0.05, tf.float32)
+        pepper =  tf.cast(tf.random.uniform(shape=tf.shape(X), minval=0, maxval=1) < 0.05, tf.float32)
+        X = X + salt - pepper
         Xout = tf.clip_by_value(X, 0.0, 1.0).numpy()  # Ensure pixel values are in [0, 1]
 
     return Xout
