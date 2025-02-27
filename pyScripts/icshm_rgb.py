@@ -126,7 +126,7 @@ model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 
 
 # Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
-dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.7, validation_ratio=0.1, sampleSize=-1, shuffle=True)
+dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.7, validation_ratio=0.1, sampleSize=-1)
 trainer = DLTrainer(CURRENT_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
 model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
