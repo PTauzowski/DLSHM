@@ -43,9 +43,6 @@ class DataSource:
         self.shuffle=shuffle
         self.sampleSize=sampleSize
         self.CROSS_VALIDATION_FOLDS=cross_validation_folds
-        if cross_validation_folds>1:
-            self.test_ratio = 1-train_ratio-validation_ratio
-            self.validation_ratio=train_ratio/cross_validation_folds
 
         if self.sourceDir == "":
             print("Source path can't be empty")
@@ -55,8 +52,8 @@ class DataSource:
             return
         print('Reading images from ', self.sourceDir)
         self.files = glob.glob(self.sourceDir + '/*')
-        if shuffle:
-            random.shuffle(self.files)
+        # if shuffle:
+        #     random.shuffle(self.files)
         print('Number of images :', len(self.files))
         if  len(self.files)==0:
             print("Source dir can't be empty")
@@ -72,8 +69,8 @@ class DataSource:
         self.test_samples_size = self.used_sample_size - self.train_samples_size - self.validation_samples_size
 
     def get_train_set_files(self):
-
             return self.files[:self.train_samples_size]
+
     def get_validation_set_files(self):
         return self.files[self.train_samples_size:self.train_samples_size+self.validation_samples_size]
 

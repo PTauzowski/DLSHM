@@ -70,7 +70,7 @@ model.summary()
 print("Class Weights:", data_manager.weights)
 print("Sum   Weights:", sum(data_manager.weights))
 
-class_weights= np.array([0.00174144, 0.09980335, 0.8984552 ])
+class_weights= np.array([ 0.00174144, 0.09980335, 0.8984552 ])
 normalized_class_weights = class_weights / np.sum(class_weights)
 
 loss_fn = weighted_categorical_crossentropy(normalized_class_weights)

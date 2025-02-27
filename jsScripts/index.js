@@ -108,7 +108,7 @@ function drawOnImage(img = null) {
 function loadModel(fileName) {
     return tf.loadLayersModel(fileName);
 }
-
+nvidia-smi
 let model;
 loadModel('models/ICSHM_RGBbig_L5_E100_aug/model.json').then(function(loadModel) {
 	model = loadModel;
