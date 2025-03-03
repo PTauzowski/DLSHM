@@ -15,6 +15,9 @@ from keras.metrics import Accuracy, CategoricalAccuracy
 # import datetime as dt
 
 
+import numpy as np
+
+
 def apply_crf(image, predicted_probs, num_iterations=10):
     """
     Apply DenseCRF to refine segmentation.
@@ -28,19 +31,23 @@ def apply_crf(image, predicted_probs, num_iterations=10):
     - Refined segmentation map
     """
     H, W = image.shape[:2]
-    num_classes = predicted_probs.shape[0]
+    num_classes = predicted_probs.shape[2]  # Assuming predicted_probs shape is (C, H, W)
+
+    # Flatten the image dimensions to (H * W)
+    image_flat = image.reshape((-1, 3))  # Shape: (H * W, 3)
+    predicted_probs_flat = predicted_probs.reshape((num_classes, -1))  # Shape: (C, H * W)
 
     # Initialize DenseCRF model
     d = dcrf.DenseCRF2D(W, H, num_classes)
 
     # Create unary potential from softmax predictions
-    unary = unary_from_softmax(predicted_probs)
+    unary = unary_from_softmax(predicted_probs_flat)
     d.setUnaryEnergy(unary)
 
     # Add pairwise potentials (spatial and bilateral)
-    d.addPairwiseEnergy(create_pairwise_gaussian(sdims=(3, 3), shape=(H, W)), compat=3)
-    d.addPairwiseEnergy(create_pairwise_bilateral(sdims=(50, 50), schan=(20, 20, 20), img=image, shape=(H, W)),
-                        compat=10)
+    # Fix: Removed the 'shape' argument from `create_pairwise_bilateral`
+    d.addPairwiseEnergy(create_pairwise_gaussian(sdims=(3, 3)), compat=3)  # Spatial term
+    d.addPairwiseEnergy(create_pairwise_bilateral(sdims=(50, 50), schan=(20, 20, 20), img=image), compat=10)  # Bilateral term
 
     # Perform inference with iterations
     Q = d.inference(num_iterations)
@@ -48,6 +55,8 @@ def apply_crf(image, predicted_probs, num_iterations=10):
     # Get final refined segmentation
     refined_segmentation = np.argmax(Q, axis=0).reshape((H, W))
     return refined_segmentation
+
+
 
 
 def psnr(super_resolution, high_resolution):
@@ -137,7 +146,7 @@ class DLTrainer:
             if index + 1 >= N:  # Stop after all batches
                 break
 
-    def predict(self,img_source, inputImgReader, postprocess):
+    def predict(self,img_source, postprocess):
         predictions_dir=os.path.join(self.task_path, 'Predictions')
         if not os.path.exists(predictions_dir):
             os.makedirs(predictions_dir)
@@ -149,10 +158,12 @@ class DLTrainer:
         N = len(os.listdir(img_source))
         for filename in os.listdir(img_source):
             try:
-                data_x = inputImgReader(os.path.join(img_source, filename))
+                #data_x = inputImgReader(os.path.join(img_source, filename))
+                data_x = cv.imread(os.path.join(img_source, filename)).astype('float32') / 255.0
                 data_y = self.model.predict(np.expand_dims(data_x,0))
-                cv.imwrite(os.path.join(prediction_path, filename) + '_X.png',data_x*255 )
-                cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', postprocess(data_x, data_y[0,]) * 255)
+                postprocess(os.path.join(prediction_path, filename), data_x, data_y[0,])
+                # cv.imwrite(os.path.join(prediction_path, filename) + '_X.png',data_x*255 )
+                # cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', postprocess(data_x, data_y[0,]) * 255)
             except Exception as e:
                 print('Cant import ' + filename + ' because', e)
             index = index + 1
@@ -345,13 +356,12 @@ class DLTrainer:
         mean_bin_iou = np.sum(bin_iou) / n_masks
         global_bin_iou = np.sum(binTP) / np.sum(binTP + binFP + binFN + epsilon)
 
-            # DataFrame 1
+        # DataFrame 1
         # Categorical accuracy
         # 'Global accuracy':
         # 'Weighted accuracy' :
         # 'Mean IOU'
         # 'Global IOU'
-
 
         dfs = pd.DataFrame({'Categorical accuracy':[cat_accuracy], 'Global accuracy': [global_accuracy], 'Weighted accuracy' : [weighted_accuracy], 'Mean IOU' : [mean_iou], 'Global IOU' : [global_iou] })
         df = pd.DataFrame({'Class': CLASS_NAMES, 'Class accuracy': class_accuracy, 'Precision': precision, 'Recall' : recall, 'F1 Score (Dice Coefficient)': dsc, 'Specificity':specificity, 'Balanced accuracy':balanced_accuracy, 'IOU': iou})

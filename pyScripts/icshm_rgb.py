@@ -1,6 +1,5 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import cv2 as cv
 #import keras.backend as K
 
 #from dlshm.dlimages import data_processing
@@ -8,7 +7,7 @@ from dlshm.dlimages.data_processing import ICSHM_RGB_Converter,ICSHM_RGB_4_Conve
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
 from dlshm.dlmodels.c_unet import custom_unet
 
-import pandas as pd
+
 from dlshm.dlimages.convert import *
 from dlshm.dlmodels.trainer import *
 from dlshm.dlmodels.custom_models import *
@@ -18,14 +17,22 @@ from skimage.transform import resize
 import pandas as pd
 import matplotlib as mpl
 
+from dlshm.dlimages.postprocess import write_prediction_segmentated, write_prediction_segmentated2, write_smooth_masks,write_smooth_masks_refined
+
 import sys
+
+import tensorflow as tf
+# print(tf.__version__)  # TensorFlow version
+# print(tf.keras.__path__)
 
 # import datetime as dt
 
 #User='Mariusz'
 User='Piotr'
 
-CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_100'
+#CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_100'
+#CURRENT_MODEL_NAME= 'ICSHM_RGB_UNET_100'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_VGG19_100'
 
 if User=='Mariusz':
     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
@@ -36,16 +43,16 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-    TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
+    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet4'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -100,7 +107,7 @@ CROSS_VALIDATION_FOLDS=6
 
 CLASS_NAMES =["Nonstructural", "Slab", "Beam", "Column" ]
 
-
+#dir_files_processing('/Users/piotrek/Computations/Ai/ICSHM/Predictions/Photos/Images', ImageResizer(RES_X,RES_Y,'/Users/piotrek/Computations/Ai/ICSHM/Predictions/Photos/PredictionPhotos'))
 imgRGB_conv  = ICSHM_RGB_4_Converter(RES_X, RES_Y)    # konwersja na pliki npy - jak sa, to juz tego nie robi
 data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH) # na razie nie wiadomo
 data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_IMAGES_PATH )  # powinno sie nie uruchamiac, jak sa npy
@@ -122,13 +129,13 @@ loss_fn = weighted_categorical_crossentropy(normalized_class_weights)
 # model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 # model = build_vgg19_segmentation_model(input_shape=(RES_Y,RES_X,3), num_classes=N_CLASSES)
 # model = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(resY,resX,nCHANNELS),  classes=nCLASSES, classifier_activation="softmax")
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 # model = u_net_compiled(input_size=(RES_Y,RES_X,N_CHANNELS), n_filters=N_FILTERS, n_classes=N_FILTERS)
 
 
 # Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
 dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.7, validation_ratio=0.1, sampleSize=-1)
-trainer = DLTrainer(CURRENT_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
+trainer = DLTrainer(CURRENT_MODEL_NAME, None, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
 model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
@@ -142,60 +149,24 @@ validation_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_validation_set_fi
 test_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
 
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
-trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
-trainer.plot_training_history()
+#trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
+#trainer.plot_training_history()
 
 # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
 #print("Evaluate on test data")
 #results = model.evaluate(test_gen, batch_size=1)
 #print("test results:", results)
 
-def test_rgb_postprocess(filename, x, y, result):
-    fig, axp = plt.subplots(N_CLASSES, 4)
-    fig.set_size_inches((20, 10))
-    for i in range(0, 8):
-        axp[i, 0].imshow(x[0, :, :, :])
-        axp[i, 1].imshow(y[0, :, :, i])
-        axp[i, 2].imshow(result[0, :, :, i] > 0.5)
-        axp[i, 3].imshow(result[0, :, :, i])
-    plt.savefig(filename)
-    plt.close(fig)
 
-def test_dmg_segmentation(pathname, x, y, result):
-    path, filename = os.path.split(pathname)
-    name, extension = os.path.splitext(filename)
-    source_name=os.path.join(path,name+"_source")+extension
-    test_name = os.path.join(path,name + "_result")+extension
-    # Define the color palette for the segmentation masks
-    colors = np.array([
-         [0, 0, 0],  # background
-         [1, 0, 0],  # mask 1 (red)
-         [0, 1, 0],  # mask 2 (green)
-         [0, 0, 1]  # mask 3 (blue)
-    ], dtype=np.float32)
-
-    accuracy =  np.mean( y == (result > 0.5).astype(int) )
-    epsilon = 1.0E-07
-    y_pred = tf.clip_by_value(result, clip_value_min=epsilon, clip_value_max=1.0 - epsilon)
-    loss = tf.reduce_mean(-tf.reduce_sum(y * tf.math.log(y_pred), axis=-1))
-
-    nmasks = y.shape[3]
-    masks = colors[np.argmax(result, axis=-1)]
-    sourse_masks = colors[np.argmax(y, axis=-1)]
-
-    alpha = 0.6
-    blended = cv.addWeighted(masks[0,], 1-alpha, x[0,], alpha, 0)
-    source_blended = cv.addWeighted(sourse_masks[0,], 1 - alpha, x[0,], alpha, 0)
-    # Display the result in a window
-    cv.imwrite(source_name, source_blended*255)
-    cv.imwrite(test_name,blended*255)
-    #print(name," accuracy = ",accuracy," loss = ", loss, "\n")
 
  # Testowanie na danych testowych (nie walidacyjnych)
-trainer.test_model(test_gen,test_dmg_segmentation)
-dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
+# trainer.test_model(test_gen,test_dmg_segmentation)
+# dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
 
-with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
-   dfs.to_excel(writer, sheet_name='ICSHM', index=False)
-   df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+# with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
+#    dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+#    df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+#
 
+
+trainer.predict('/Users/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_smooth_masks_refined)

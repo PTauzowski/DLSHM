@@ -76,7 +76,7 @@ def dir_files_processing(source_path, process_callable, Nlimit=-1):
         print("Source path :", source_path + "Is not valid directory name. Processing aborted.")
         return False
     print('Reading images from ', source_path)
-    files = glob.glob(source_path + '\\*.*')
+    files = glob.glob(source_path + '/*')
     if Nlimit != -1 :
         files=files[0:min(Nlimit,len(files))-1]
     N = len(files)
@@ -144,8 +144,10 @@ def dir_files_parallel_processing(source_path, process_callable, Nlimit=-1, num_
 
 class ImageResizer:
 
-    def __init__(self, sx, sy, destination_path):
+    def __init__(self, destSizeX, destSizeY, destination_path):
         self.destination_path = destination_path
+        self.destSizeX=destSizeX
+        self.destSizeY=destSizeY
 
     def __call__(self, filename):
         outfilename = os.path.join(self.destination_path, os.path.basename(filename))

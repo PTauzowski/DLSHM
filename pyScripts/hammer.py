@@ -6,7 +6,7 @@ from keras.losses import BinaryCrossentropy
 from keras.metrics import Accuracy
 from keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
-from keras.wrappers.scikit_learn import KerasClassifier
+#from keras.wrappers.scikit_learn import KerasClassifier
 
 print(tf.__version__)
 
