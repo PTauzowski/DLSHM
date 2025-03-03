@@ -1,18 +1,53 @@
-import time
 import os
-from tabnanny import verbose
+import time
 
-import matplotlib
 import cv2 as cv
-import tensorflow as tf
 import numpy as np
-from flatbuffers.packer import float32
-from keras.src.metrics.accuracy_metrics import accuracy, categorical_accuracy
-from matplotlib import image as mpimg, pyplot as plt
-from tensorflow.python.ops.metrics_impl import mean_iou
 import pandas as pd
+import pydensecrf.densecrf as dcrf
+import tensorflow as tf
+from flatbuffers.packer import float32
+from matplotlib import pyplot as plt
+from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
+from keras.metrics import Accuracy, CategoricalAccuracy
+
 
 # import datetime as dt
+
+
+def apply_crf(image, predicted_probs, num_iterations=10):
+    """
+    Apply DenseCRF to refine segmentation.
+
+    Args:
+    - image: Input image (H, W, 3)
+    - predicted_probs: Softmax probabilities from the model (C, H, W)
+    - num_iterations: Number of CRF inference iterations
+
+    Returns:
+    - Refined segmentation map
+    """
+    H, W = image.shape[:2]
+    num_classes = predicted_probs.shape[0]
+
+    # Initialize DenseCRF model
+    d = dcrf.DenseCRF2D(W, H, num_classes)
+
+    # Create unary potential from softmax predictions
+    unary = unary_from_softmax(predicted_probs)
+    d.setUnaryEnergy(unary)
+
+    # Add pairwise potentials (spatial and bilateral)
+    d.addPairwiseEnergy(create_pairwise_gaussian(sdims=(3, 3), shape=(H, W)), compat=3)
+    d.addPairwiseEnergy(create_pairwise_bilateral(sdims=(50, 50), schan=(20, 20, 20), img=image, shape=(H, W)),
+                        compat=10)
+
+    # Perform inference with iterations
+    Q = d.inference(num_iterations)
+
+    # Get final refined segmentation
+    refined_segmentation = np.argmax(Q, axis=0).reshape((H, W))
+    return refined_segmentation
 
 
 def psnr(super_resolution, high_resolution):

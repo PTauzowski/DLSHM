@@ -1,16 +1,52 @@
 import tensorflow as tf
-from keras import Input, applications, initializers, layers, Model
-from keras.layers import AveragePooling2D, Conv2D, BatchNormalization, UpSampling2D, Concatenate,Conv2DTranspose
+from tensorflow.keras import Input, applications, initializers, layers, Model
+from tensorflow.keras.layers import AveragePooling2D, Conv2D, BatchNormalization, UpSampling2D, Concatenate,Conv2DTranspose
 
-def custom_vgg19( input_shape):
-    model = tf.keras.applications.VGG19 (include_top=False, input_shape=input_shape, classes=3)
+
+def build_vgg19_segmentation_model(input_shape, num_classes=8):
+    # Use VGG19 without the top layers
+    vgg19 = tf.keras.applications.VGG19(include_top=False, input_shape=input_shape)
+
+    # Freeze the VGG19 layers
+    for layer in vgg19.layers:
+        layer.trainable = False
+
+    # Input layer
+    inputs = layers.Input(shape=input_shape)
+
+    # Use VGG19 as a feature extractor
+    x = vgg19(inputs)
+
+    # Add custom layers on top for segmentation
+    x = layers.Conv2D(1024, (3, 3), padding='same', activation='relu')(x)
+    x = layers.UpSampling2D(size=(4, 4))(x)  # Upsample to match the original image size
+    x = layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
+    x = layers.UpSampling2D(size=(2, 2))(x)  # Upsample to match the original image size
+    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
+    x = layers.UpSampling2D(size=(2, 2))(x)
+    x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
+    x = layers.UpSampling2D(size=(2, 2))(x)
+    x = layers.Conv2D(8, (3, 3), padding='same', activation='relu')(x)
+
+    # Final segmentation layer
+    outputs = layers.Conv2D(num_classes, (1, 1), padding='same', activation='softmax')(x)
+
+    # Create model
+    model = Model(inputs, outputs)
+
+    return model
+
+
+def custom_vgg19( input_shape, classes ):
+    model = tf.keras.applications.VGG19 (include_top=False, input_shape=input_shape, classes=classes)
     x = model.layers[-1].output
     x = Conv2D(1024, (3, 3), activation='relu', padding='same')(x)
     x = Conv2DTranspose(512, (2, 2), strides=(2, 2), activation='relu', padding='same')(x)
     x = Conv2DTranspose(256, (2, 2), strides=(2, 2), activation='relu', padding='same')(x)
     x = Conv2DTranspose(128, (2, 2), strides=(2, 2), activation='relu', padding='same')(x)
     x = Conv2DTranspose(64, (2, 2), strides=(2, 2), activation='relu', padding='same')(x)
-    outputs = Conv2DTranspose(8, (2, 2), strides=(2, 2), activation='sigmoid', padding='same')(x)
+    conv9 = Conv2DTranspose(8, (2, 2), strides=(2, 2), activation='softmax', padding='same')(x)
+    outputs = Conv2D(classes, 1, padding='same')( conv9 )
     model = Model(inputs=model.inputs, outputs=outputs)
     return model
 

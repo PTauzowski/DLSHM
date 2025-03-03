@@ -36,6 +36,30 @@ class ICSHM_RGB_Converter:
 
         return self.x, self.y
 
+class ICSHM_RGB_4_Converter:
+    def __init__(self,resX,resY):
+        self.resX=resX
+        self.resY=resY
+        self.x = np.empty((resY, resX, 3),dtype=np.float32)
+        self.y = np.empty((resY, resX, 4),dtype=np.float32)
+
+    def __call__(self, imageName, labName, dmgName, depthName):
+        image_array = resize(cv.imread(imageName), (self.resY, self.resX), anti_aliasing=True)
+        self.x[:, :, 0] = image_array[:, :, 0]
+        self.x[:, :, 1] = image_array[:, :, 1]
+        self.x[:, :, 2] = image_array[:, :, 2]
+
+        mask = np.asarray(mpimg.imread(labName))
+        mask = Image.fromarray(mask).resize((self.resX, self.resY), Image.NEAREST)
+        mask = np.array(mask)
+        merged_mask = (mask == 1) | (mask == 5) | (mask == 6) | (mask == 7) | (mask == 8)
+        self.y[:, :, 0] = np.where(merged_mask==True, 1, 0)
+        self.y[:, :, 1] = np.where(mask == 2, 1, 0)
+        self.y[:, :, 2] = np.where(mask == 3, 1, 0)
+        self.y[:, :, 3] = np.where(mask == 4, 1, 0)
+
+        return self.x, self.y
+
 class ICSHM_BG_Converter:
     def __init__(self,resX,resY):
         self.resX=resX

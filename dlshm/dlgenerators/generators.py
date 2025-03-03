@@ -52,6 +52,7 @@ class DataSource:
             return
         print('Reading images from ', self.sourceDir)
         self.files = glob.glob(self.sourceDir + '/*')
+        self.file_parts = np.array_split(self.files, 4)
         # if shuffle:
         #     random.shuffle(self.files)
         print('Number of images :', len(self.files))
@@ -67,6 +68,26 @@ class DataSource:
         self.train_samples_size = int(round(self.used_sample_size * self.trainRatio))
         self.validation_samples_size = int(round(self.used_sample_size * self.validation_ratio))
         self.test_samples_size = self.used_sample_size - self.train_samples_size - self.validation_samples_size
+
+        self.nfolds = int( (len(self.files) - self.test_samples_size)  / self.validation_samples_size + 0.01)
+
+        train_zone = self.files[:self.train_samples_size+self.validation_samples_size]
+        self.train_zone_parts = np.array_split(train_zone, self.nfolds)
+
+        self.train_files = self.files[:self.train_samples_size]
+        self.validation_files = self.files[self.train_samples_size:self.train_samples_size+self.validation_samples_size]
+        self.test_files = self.files[self.train_samples_size+self.validation_samples_size:self.used_sample_size]
+
+    def get_training_fold(self,ith):
+            train_files=[]
+            validation_files=[]
+            for k in range(self.nfolds):
+                if k != ith:
+                    train_files = train_files + self.train_zone_parts[k]
+                else:
+                    valdation_files = self.train_zone_parts[k]
+            return train_files, validation_files
+
 
     def get_train_set_files(self):
             return self.files[:self.train_samples_size]
@@ -257,7 +278,7 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
     'Generates data for Keras'
 
     def __init__(self, files, batch_size=32, idim=(32, 32), odim=(32, 32), n_channels=3,
-                 n_classes=3, shuffle=True):
+                 n_classes=3, shuffle=True, Augmentation=False):
         'Initialization'
         self.idim = idim
         self.odim = odim
@@ -266,6 +287,7 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.shuffle = shuffle
+        self.Augmentation=Augmentation
         self.on_epoch_end()
         self.X = np.empty((len(files), *self.idim, self.n_channels), dtype=np.float32)
         self.Y = np.empty((len(files), *self.odim, self.n_classes), dtype=np.float32)
@@ -295,6 +317,12 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, indexes):
+        if self.Augmentation:
+            Xa = self.X[indexes,]
+            for i in range(Xa.shape[0]):
+                Xa[i,] = tf.image.random_brightness(Xa[i,], max_delta=0.8).numpy()  # Random brightness
+                Xa[i,] = tf.image.random_contrast(Xa[i,], lower=0.3, upper=1.5).numpy()  # Random contrast
+            return Xa, self.Y[indexes,]
         return self.X[indexes,], self.Y[indexes,]
 
 class DataGeneratorHalfSequences(tf.keras.utils.Sequence):

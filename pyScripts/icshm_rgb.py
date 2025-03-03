@@ -4,8 +4,9 @@ import cv2 as cv
 #import keras.backend as K
 
 #from dlshm.dlimages import data_processing
-from dlshm.dlimages.data_processing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter, compute_class_weights
+from dlshm.dlimages.data_processing import ICSHM_RGB_Converter,ICSHM_RGB_4_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter, compute_class_weights
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
+from dlshm.dlmodels.c_unet import custom_unet
 
 import pandas as pd
 from dlshm.dlimages.convert import *
@@ -14,7 +15,6 @@ from dlshm.dlmodels.custom_models import *
 from dlshm.dlgenerators.generators import *
 import tensorflow as tf
 from skimage.transform import resize
-from keras_unet.models import custom_unet
 import pandas as pd
 import matplotlib as mpl
 
@@ -22,10 +22,10 @@ import sys
 
 # import datetime as dt
 
-User='Mariusz'
-# User='Piotr'
+#User='Mariusz'
+User='Piotr'
 
-CURRENT_MODEL_NAME= 'ICSHM_RGB_DeepLabV3_E3w'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_100'
 
 if User=='Mariusz':
     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
@@ -36,15 +36,16 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet'
+    TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -71,11 +72,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
         [0, 0, 0],  # background
         [1, 0, 0],  # mask 1 (red)
         [0, 1, 0],  # mask 2 (green)
-        [0, 0, 1],  # mask 3 (blue)
-        [1, 1, 0],  # mask 4 (yellow)
-        [1, 0, 1],  # mask 5 (magenta)
-        [0, 1, 1],  # mask 6 (cyan)
-        [0, 0, 0],  # mask 7 (gray)
+        [0, 0, 1]  # mask 3 (blue)
     ], dtype=np.float32)
 
     nmasks = y.shape[2]
@@ -85,12 +82,12 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=200
+EPOCHS=100
 BATCH_SIZE=32
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
-N_CLASSES=8
+N_CLASSES=4
 N_LAYERS=5
 N_FILTERS=21
 LEARNING_RATE = 0.001
@@ -99,10 +96,12 @@ TRAIN_DATA_RATIO=0.8
 TEST_DATA_RATIO=0.15
 CROSS_VALIDATION_FOLDS=6
 
-CLASS_NAMES =["Nonbridge", "Slab", "Beam", "Column", "Nonstructural", "Rail", "Sleeper", "Other" ]
+#CLASS_NAMES =["Nonbridge", "Slab", "Beam", "Column", "Nonstructural", "Rail", "Sleeper", "Other" ]
+
+CLASS_NAMES =["Nonstructural", "Slab", "Beam", "Column" ]
 
 
-imgRGB_conv  = ICSHM_RGB_Converter(RES_X, RES_Y)    # konwersja na pliki npy - jak sa, to juz tego nie robi
+imgRGB_conv  = ICSHM_RGB_4_Converter(RES_X, RES_Y)    # konwersja na pliki npy - jak sa, to juz tego nie robi
 data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH) # na razie nie wiadomo
 data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_IMAGES_PATH )  # powinno sie nie uruchamiac, jak sa npy
 
@@ -111,7 +110,9 @@ print("Class Weights:", data_manager.weights)
 print("Sum   Weights:", sum(data_manager.weights))
 
 # class weights reflects not only pixel ratio but also class importance
-class_weights = np.array([0.05, 0.1, 0.1, 0.1, 0.2, 0.5, 1.0, 0.05])
+#class_weights = np.array([0.05, 0.1, 0.1, 0.1, 0.2, 0.5, 1.0, 0.05])
+
+class_weights = np.array([0.07, 0.33, 0.35, 0.25])
 
 # Normalize the weights so that their sum is 1
 normalized_class_weights = class_weights / np.sum(class_weights)
@@ -119,7 +120,7 @@ normalized_class_weights = class_weights / np.sum(class_weights)
 loss_fn = weighted_categorical_crossentropy(normalized_class_weights)
 
 # model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# model = custom_vgg19(input_shape=(RES_Y,RES_X,3))
+# model = build_vgg19_segmentation_model(input_shape=(RES_Y,RES_X,3), num_classes=N_CLASSES)
 # model = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(resY,resX,nCHANNELS),  classes=nCLASSES, classifier_activation="softmax")
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 # model = u_net_compiled(input_size=(RES_Y,RES_X,N_CHANNELS), n_filters=N_FILTERS, n_classes=N_FILTERS)
@@ -136,9 +137,9 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), l
 model.summary()
 
 # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
-train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=True)
-validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
-test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
+train_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=True)
+validation_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
+test_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
 
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
 trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
@@ -150,7 +151,7 @@ trainer.plot_training_history()
 #print("test results:", results)
 
 def test_rgb_postprocess(filename, x, y, result):
-    fig, axp = plt.subplots(8, 4)
+    fig, axp = plt.subplots(N_CLASSES, 4)
     fig.set_size_inches((20, 10))
     for i in range(0, 8):
         axp[i, 0].imshow(x[0, :, :, :])
@@ -170,11 +171,7 @@ def test_dmg_segmentation(pathname, x, y, result):
          [0, 0, 0],  # background
          [1, 0, 0],  # mask 1 (red)
          [0, 1, 0],  # mask 2 (green)
-         [0, 0, 1],  # mask 3 (blue)
-         [1, 1, 0],  # mask 4 (yellow)
-         [1, 0, 1],  # mask 5 (magenta)
-         [0, 1, 1],  # mask 6 (cyan)
-         [0.5, 0.5, 0.5],  # mask 7 (gray)
+         [0, 0, 1]  # mask 3 (blue)
     ], dtype=np.float32)
 
     accuracy =  np.mean( y == (result > 0.5).astype(int) )
