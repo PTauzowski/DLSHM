@@ -2,6 +2,53 @@ import tensorflow as tf
 from tensorflow.keras import Input, applications, initializers, layers, Model
 from tensorflow.keras.layers import AveragePooling2D, Conv2D, BatchNormalization, UpSampling2D, Concatenate,Conv2DTranspose
 
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+
+def conv_bn_relu(filters, kernel_size, strides=1, dilation_rate=1):
+    def layer(x):
+        x = layers.Conv2D(filters, kernel_size, strides=strides, padding="same",
+                          dilation_rate=dilation_rate, use_bias=False)(x)
+        x = layers.BatchNormalization()(x)
+        return layers.ReLU()(x)
+
+    return layer
+
+
+def ASPP(x, filters=256):
+    """ Atrous Spatial Pyramid Pooling """
+    pool = layers.GlobalAveragePooling2D()(x)
+    pool = layers.Reshape((1, 1, x.shape[-1]))(pool)
+    pool = layers.Conv2D(filters, 1, padding="same", use_bias=False)(pool)
+    pool = layers.BatchNormalization()(pool)
+    pool = layers.ReLU()(pool)
+    pool = layers.UpSampling2D(size=(x.shape[1], x.shape[2]), interpolation="bilinear")(pool)
+
+    conv_1x1 = conv_bn_relu(filters, 1)(x)
+    conv_3x3_1 = conv_bn_relu(filters, 3, dilation_rate=6)(x)
+    conv_3x3_2 = conv_bn_relu(filters, 3, dilation_rate=12)(x)
+    conv_3x3_3 = conv_bn_relu(filters, 3, dilation_rate=18)(x)
+
+    x = layers.Concatenate()([pool, conv_1x1, conv_3x3_1, conv_3x3_2, conv_3x3_3])
+    x = conv_bn_relu(filters, 1)(x)
+    return x
+
+
+def DeepLabV3(input_shape=(512, 512, 3), num_classes=21, backbone='resnet50'):
+    """ DeepLab v3 implementation with ResNet backbone. """
+    base_model = keras.applications.ResNet50(weights="imagenet", include_top=False, input_shape=input_shape)
+    x = base_model.get_layer("conv4_block6_out").output  # Output of ResNet block 4
+    x = ASPP(x)
+    x = layers.UpSampling2D(size=(4, 4), interpolation="bilinear")(x)
+    x = layers.Conv2D(num_classes, 1, padding="same")(x)
+    x = layers.UpSampling2D(size=(4, 4), interpolation="bilinear")(x)
+
+    return keras.Model(inputs=base_model.input, outputs=x)
+
+
+
 
 def build_vgg19_segmentation_model(input_shape, num_classes=8):
     # Use VGG19 without the top layers
