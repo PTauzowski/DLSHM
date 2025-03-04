@@ -12,12 +12,11 @@ from dlshm.dlimages.convert import *
 from dlshm.dlmodels.trainer import *
 from dlshm.dlmodels.custom_models import *
 from dlshm.dlgenerators.generators import *
-import tensorflow as tf
 from skimage.transform import resize
 import pandas as pd
 import matplotlib as mpl
 
-from dlshm.dlimages.postprocess import write_prediction_segmentated, write_prediction_segmentated2, write_smooth_masks,write_smooth_masks_refined
+from dlshm.dlimages.postprocess import write_prediction_segmentated, write_prediction_segmentated2, write_smooth_masks,write_smooth_masks_refined, test_dmg_segmentation
 
 import sys
 
@@ -30,9 +29,9 @@ import tensorflow as tf
 #User='Mariusz'
 User='Piotr'
 
-#CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_100'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_200'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_UNET_100'
-CURRENT_MODEL_NAME= 'ICSHM_RGB_VGG19_100'
+#CURRENT_MODEL_NAME= 'ICSHM_RGB_VGG19_100'
 
 if User=='Mariusz':
     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
@@ -43,16 +42,16 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-    #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/home/piotrek/DataSets/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet4'
+    TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -89,7 +88,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=100
+EPOCHS=200
 BATCH_SIZE=32
 RES_X=640
 RES_Y=320
@@ -129,7 +128,7 @@ loss_fn = weighted_categorical_crossentropy(normalized_class_weights)
 # model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 # model = build_vgg19_segmentation_model(input_shape=(RES_Y,RES_X,3), num_classes=N_CLASSES)
 # model = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(resY,resX,nCHANNELS),  classes=nCLASSES, classifier_activation="softmax")
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 # model = u_net_compiled(input_size=(RES_Y,RES_X,N_CHANNELS), n_filters=N_FILTERS, n_classes=N_FILTERS)
 
 
@@ -159,14 +158,14 @@ test_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_test_set_files(),1,(RES
 
 
 
- # Testowanie na danych testowych (nie walidacyjnych)
-# trainer.test_model(test_gen,test_dmg_segmentation)
-# dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
+# Testowanie na danych testowych (nie walidacyjnych)
+trainer.test_model(test_gen,test_dmg_segmentation)
+dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
 
-# with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
-#    dfs.to_excel(writer, sheet_name='ICSHM', index=False)
-#    df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
-#
+with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
+    dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+    df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
 
-trainer.predict('/Users/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_smooth_masks_refined)
+
+#trainer.predict('/Users/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_smooth_masks_refined)
