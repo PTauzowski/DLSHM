@@ -29,7 +29,7 @@ import tensorflow as tf
 #User='Mariusz'
 User='Piotr'
 
-CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_5'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100_bs8'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_200'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_UNET_100'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_VGG19_100'
@@ -43,16 +43,16 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-    #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet4'
+    TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -89,8 +89,8 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=200
-BATCH_SIZE=32
+EPOCHS=100
+BATCH_SIZE=8
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
@@ -154,20 +154,20 @@ trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
 trainer.plot_training_history()
 
 # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
-#print("Evaluate on test data")
-#results = model.evaluate(test_gen, batch_size=1)
-#print("test results:", results)
-
+print("Evaluate on test data")
+results = model.evaluate(test_gen, batch_size=1)
+print("test results:", results)
 
 
 # Testowanie na danych testowych (nie walidacyjnych)
-# trainer.test_model(test_gen,test_dmg_segmentation)
-# dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
-#
-# with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
-#     dfs.to_excel(writer, sheet_name='ICSHM', index=False)
-#     df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+trainer.test_model(test_gen,test_dmg_segmentation)
+dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
+
+
+with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
+     dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+     df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
 
 
-#trainer.predict('/Users/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+#trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
