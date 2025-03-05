@@ -11,9 +11,7 @@ from matplotlib import pyplot as plt
 from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
 from keras.metrics import Accuracy, CategoricalAccuracy
 
-
 # import datetime as dt
-
 
 import numpy as np
 
@@ -55,8 +53,6 @@ def apply_crf(image, predicted_probs, num_iterations=10):
     # Get final refined segmentation
     refined_segmentation = np.argmax(Q, axis=0).reshape((H, W))
     return refined_segmentation
-
-
 
 
 def psnr(super_resolution, high_resolution):

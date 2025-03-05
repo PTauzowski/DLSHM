@@ -11,14 +11,21 @@ def gener_test(pathName, data_generator, scope=-1):
     N=scope
     if N==-1:
         N=len(data_generator)
-    k=0;
-    for data_x, data_y in data_generator:
-        for b in range(0,data_x.shape[0]):
-            cv.imwrite( os.path.join(pathName, f"input_{k}_{b}.png"), data_x[b,] * 255)
-            cv.imwrite( os.path.join(pathName, f"output_{k}_{b}.png"), data_y[b,] * 255)
-        k+=1
-        if k>N:
-            break
+    k=0
+    b=0
+    isExist = os.path.exists(pathName)
+    if not isExist:
+        os.makedirs(pathName)
+    try:
+        for data_x, data_y in data_generator:
+            for b in range(0,data_x.shape[0]):
+                cv.imwrite( os.path.join(pathName, f"input_{k}_{b}.png"), data_x[b,] * 255)
+                cv.imwrite( os.path.join(pathName, f"output_{k}_{b}.png"), data_y[b,] * 255)
+            k+=1
+            if k>N:
+                break
+    except Exception as err:
+        print('Cant export file ' + os.path.join(pathName, f"input_{k}_{b}.png") + ' because:', err)
 
 def sequenced_gener_test(pathName, data_generator, scope=-1):
     N=scope
@@ -267,8 +274,9 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
 
                     #X[i,] = augment_random_image_quality(X[i,])
 
-                    X[i,] = tf.image.random_brightness(X[i,], max_delta=0.8).numpy()  # Random brightness
-                    X[i,] = tf.image.random_contrast(X[i,], lower=0.3, upper=1.5).numpy()  # Random contrast
+                    X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
+                    X[i,] = tf.image.random_contrast(X[i,], lower=0.7, upper=1.1).numpy()  # Random contrast
+                    X[i,] = tf.image.random_flip_left_right(X[i,]).numpy()  # horizontal flip
                     # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
                     #X[i,], Y[i,] = augment_random_image_transformation(X[i,], Y[i,])
 
@@ -320,8 +328,9 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
         if self.Augmentation:
             Xa = self.X[indexes,]
             for i in range(Xa.shape[0]):
-                Xa[i,] = tf.image.random_brightness(Xa[i,], max_delta=0.8).numpy()  # Random brightness
-                Xa[i,] = tf.image.random_contrast(Xa[i,], lower=0.3, upper=1.5).numpy()  # Random contrast
+                Xa[i,] = tf.image.random_brightness(Xa[i,], max_delta=0.2).numpy()  # Random brightness
+                Xa[i,] = tf.image.random_contrast(Xa[i,], lower=0.7, upper=1.1).numpy()  # Random contrast
+                Xa[i,] = tf.image.random_flip_left_right(Xa[i,]).numpy() # horizontal flip
             return Xa, self.Y[indexes,]
         return self.X[indexes,], self.Y[indexes,]
 
