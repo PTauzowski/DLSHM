@@ -29,7 +29,7 @@ import tensorflow as tf
 #User='Mariusz'
 User='Piotr'
 
-CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100_bs8'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_100_bs64'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_200'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_UNET_100'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_VGG19_100'
@@ -90,7 +90,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     return result
 
 EPOCHS=100
-BATCH_SIZE=8
+BATCH_SIZE=64
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
