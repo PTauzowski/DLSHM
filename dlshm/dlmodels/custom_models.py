@@ -17,7 +17,7 @@ def conv_bn_relu(filters, kernel_size, strides=1, dilation_rate=1):
     return layer
 
 
-def ASPP(x, filters=256):
+def ASPP1(x, filters=256):
     """ Atrous Spatial Pyramid Pooling """
     pool = layers.GlobalAveragePooling2D()(x)
     pool = layers.Reshape((1, 1, x.shape[-1]))(pool)
@@ -35,14 +35,49 @@ def ASPP(x, filters=256):
     x = conv_bn_relu(filters, 1)(x)
     return x
 
+def ASPP2(x):
+    """ Atrous Spatial Pyramid Pooling module """
+    conv1 = layers.Conv2D(256, 1, padding="same", activation="relu")(x)
+    conv3 = layers.Conv2D(256, 3, dilation_rate=6, padding="same", activation="relu")(x)
+    conv5 = layers.Conv2D(256, 3, dilation_rate=12, padding="same", activation="relu")(x)
+    conv7 = layers.Conv2D(256, 3, dilation_rate=18, padding="same", activation="relu")(x)
+    concat = layers.Concatenate()([conv1, conv3, conv5, conv7])
+    return layers.Conv2D(256, 1, padding="same", activation="relu")(concat)
 
-def DeepLabV3(input_shape=(512, 512, 3), num_classes=21, backbone='resnet50'):
+
+
+def DeepLabV3_2(input_shape=(512, 512, 3), num_classes=21, backbone='resnet50'):
     """ DeepLab v3 implementation with ResNet backbone. """
-    base_model = keras.applications.ResNet50(weights="imagenet", include_top=False, input_shape=input_shape)
+    base_model = keras.applications.ResNet101(weights="imagenet", include_top=False, input_shape=input_shape)
     x = base_model.get_layer("conv4_block6_out").output  # Output of ResNet block 4
-    x = ASPP(x)
+    x = ASPP2(x)
     x = layers.UpSampling2D(size=(4, 4), interpolation="bilinear")(x)
     x = layers.Conv2D(num_classes, 1, padding="same")(x)
+
+    # Apply softmax (multi-class) or sigmoid (binary segmentation)
+    if num_classes > 1:
+        x = layers.Activation("softmax")(x)  # Multi-class probability output
+    else:
+        x = layers.Activation("sigmoid")(x)  # Binary segmentation probability output
+
+    x = layers.UpSampling2D(size=(4, 4), interpolation="bilinear")(x)
+
+    return keras.Model(inputs=base_model.input, outputs=x)
+
+def DeepLabV3_1(input_shape=(512, 512, 3), num_classes=21, backbone='resnet50'):
+    """ DeepLab v3 implementation with ResNet backbone. """
+    base_model = keras.applications.ResNet101(weights="imagenet", include_top=False, input_shape=input_shape)
+    x = base_model.get_layer("conv4_block6_out").output  # Output of ResNet block 4
+    x = ASPP1(x)
+    x = layers.UpSampling2D(size=(4, 4), interpolation="bilinear")(x)
+    x = layers.Conv2D(num_classes, 1, padding="same")(x)
+
+    # Apply softmax (multi-class) or sigmoid (binary segmentation)
+    if num_classes > 1:
+        x = layers.Activation("softmax")(x)  # Multi-class probability output
+    else:
+        x = layers.Activation("sigmoid")(x)  # Binary segmentation probability output
+
     x = layers.UpSampling2D(size=(4, 4), interpolation="bilinear")(x)
 
     return keras.Model(inputs=base_model.input, outputs=x)
@@ -50,9 +85,10 @@ def DeepLabV3(input_shape=(512, 512, 3), num_classes=21, backbone='resnet50'):
 
 
 
+
 def build_vgg19_segmentation_model(input_shape, num_classes=8):
     # Use VGG19 without the top layers
-    vgg19 = tf.keras.applications.VGG19(include_top=False, input_shape=input_shape)
+    vgg19 = tf.keras.applications.VGG19(weights="imagenet",include_top=False, input_shape=input_shape)
 
     # Freeze the VGG19 layers
     for layer in vgg19.layers:
@@ -85,7 +121,7 @@ def build_vgg19_segmentation_model(input_shape, num_classes=8):
 
 
 def custom_vgg19( input_shape, classes ):
-    model = tf.keras.applications.VGG19 (include_top=False, input_shape=input_shape, classes=classes)
+    model = tf.keras.applications.VGG19 (weights="imagenet", include_top=False, input_shape=input_shape, classes=classes)
     x = model.layers[-1].output
     x = Conv2D(1024, (3, 3), activation='relu', padding='same')(x)
     x = Conv2DTranspose(512, (2, 2), strides=(2, 2), activation='relu', padding='same')(x)
@@ -137,6 +173,28 @@ def DilatedSpatialPyramidPooling(dspp_input):
 def DeeplabV3Plus(image_size, num_classes, output_activation='softmax'):
     model_input = Input(shape=(image_size[0], image_size[1], image_size[2]))
     resnet50 = applications.ResNet50(
+        weights="imagenet", include_top=False, input_tensor=model_input
+    )
+    x = resnet50.get_layer("conv4_block6_2_relu").output
+    x = DilatedSpatialPyramidPooling(x)
+
+    input_a=Conv2DTranspose(48, (2, 2), strides=(4, 4), padding="same")(x)
+
+    input_b = resnet50.get_layer("conv2_block3_2_relu").output
+    input_b = convolution_block(input_b, num_filters=48, kernel_size=1)
+
+    x = Concatenate(axis=-1)([input_a, input_b])
+    x = convolution_block(x)
+    x = convolution_block(x)
+    x = Conv2DTranspose(512, (2, 2), strides=(2, 2), padding="same")(x)
+    x = convolution_block(x)
+    x = Conv2DTranspose(64, (2, 2), strides=(2, 2), padding="same")(x)
+    model_output = Conv2D(num_classes, kernel_size=(1, 1), activation=output_activation, padding="same")(x)
+    return Model(inputs=model_input, outputs=model_output)
+
+def DeeplabV3Plus101(image_size, num_classes, output_activation='softmax'):
+    model_input = Input(shape=(image_size[0], image_size[1], image_size[2]))
+    resnet50 = applications.ResNet101(
         weights="imagenet", include_top=False, input_tensor=model_input
     )
     x = resnet50.get_layer("conv4_block6_2_relu").output

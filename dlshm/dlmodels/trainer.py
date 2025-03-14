@@ -61,6 +61,9 @@ def psnr(super_resolution, high_resolution):
     psnr_value = tf.image.psnr(high_resolution, super_resolution, max_val=1)[0]
     return psnr_value
 
+
+
+
 class DLTrainer:
     def __init__(self, model_name, model, task_path ):
         self.task_path=task_path
@@ -73,6 +76,11 @@ class DLTrainer:
             else:
                 print('Model ', model_name, 'was NOT found')
         self.model=model
+        self.model_path = os.path.join(self.task_path, 'Models')
+        isExist = os.path.exists(self.model_path)
+        if not isExist:
+            os.makedirs(self.model_path)
+        self.model_filename=os.path.join(self.model_path, self.model_name)+'.keras'
 
     def save_model(self):
         model_path = os.path.join(self.task_path, 'Models')
@@ -82,13 +90,23 @@ class DLTrainer:
         self.model.save(os.path.join(model_path, self.model_name)+'.keras')
 
     def train(self, train_gen, validation_gen, epochs, batch_size ):
+
+        checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+            self.model_filename,  # Filepath to save the model
+            monitor="val_loss",  # Metric to track (e.g., "val_accuracy" for classification)
+            save_best_only=True,  # Save only when val_loss improves
+            mode="min",  # "min" because lower loss is better
+            verbose=1  # Print a message when saving
+        )
+
         training_time_start = time.process_time()
         # logs = "logs/" + dt.datetime.now().strftime("%Y%m%d-%H%M%S")
         # tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs, histogram_freq = 1, profile_batch = '500,520')
-        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen) # , callbacks = [tboard_callback])
+        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=[checkpoint_callback]) # , callbacks = [tboard_callback])
         # Create a TensorBoard callback
-        self.save_model()
+        #self.save_model()
         self.training_time=time.process_time() - training_time_start
+        self.model = tf.keras.models.load_model(os.path.join(self.model_path, self.model_name + '.keras'), compile=False)
 
     def test_model(self, test_gen, postprocess, extension='png'):
         test_path = os.path.join(self.task_path, 'TestResults')

@@ -275,8 +275,10 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
                     #X[i,] = augment_random_image_quality(X[i,])
 
                     X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
-                    X[i,] = tf.image.random_contrast(X[i,], lower=0.7, upper=1.1).numpy()  # Random contrast
-                    X[i,] = tf.image.random_flip_left_right(X[i,]).numpy()  # horizontal flip
+                    X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.1).numpy()  # Random contrast
+                    if tf.random.uniform(()) > 0.5:
+                        X[i,] = tf.image.flip_left_right(X[i,]).numpy()  # horizontal flip
+                        Y[i,] = tf.image.flip_left_right(Y[i,]).numpy()  # horizontal flip
                     # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
                     #X[i,], Y[i,] = augment_random_image_transformation(X[i,], Y[i,])
 
@@ -325,14 +327,16 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, indexes):
+        X = self.X[indexes,]
+        Y = self.Y[indexes,]
         if self.Augmentation:
-            Xa = self.X[indexes,]
-            for i in range(Xa.shape[0]):
-                Xa[i,] = tf.image.random_brightness(Xa[i,], max_delta=0.2).numpy()  # Random brightness
-                Xa[i,] = tf.image.random_contrast(Xa[i,], lower=0.7, upper=1.1).numpy()  # Random contrast
-                Xa[i,] = tf.image.random_flip_left_right(Xa[i,]).numpy() # horizontal flip
-            return Xa, self.Y[indexes,]
-        return self.X[indexes,], self.Y[indexes,]
+            for i in range(X.shape[0]):
+                X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
+                X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.1).numpy()  # Random contrast
+                if tf.random.uniform(()) > 0.5:
+                    X[i,] = tf.image.flip_left_right(X[i,]).numpy()  # horizontal flip
+                    Y[i,] = tf.image.flip_left_right(Y[i,]).numpy()  # horizontal flip
+        return X, Y
 
 class DataGeneratorHalfSequences(tf.keras.utils.Sequence):
     'Generates data for Keras'

@@ -30,7 +30,7 @@ def test_dmg_segmentation(pathname, x, y, result):
          [0, 0, 1]  # mask 3 (blue)
     ], dtype=np.float32)
 
-    accuracy =  np.mean( y == (result > 0.5).astype(int) )
+    accuracy =  np.mean( y == (result > 0.6).astype(int) )
     epsilon = 1.0E-07
     y_pred = tf.clip_by_value(result, clip_value_min=epsilon, clip_value_max=1.0 - epsilon)
     loss = tf.reduce_mean(-tf.reduce_sum(y * tf.math.log(y_pred), axis=-1))
@@ -87,7 +87,7 @@ def write_prediction_segmentated2(pathname, x, y):
     nmasks = y.shape[2]
     masks = colors[np.argmax(y, axis=-1)]
 
-    alpha = 0.2
+    alpha = 0.6
     blended = cv.addWeighted(masks, 1-alpha, x, alpha, 0)
 
     # Display the result in a window

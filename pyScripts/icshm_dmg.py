@@ -9,10 +9,10 @@ import pandas as pd
 from dlshm.dlimages.convert import *
 from dlshm.dlmodels.trainer import *
 from dlshm.dlmodels.custom_models import *
+from dlshm.dlmodels.c_unet import custom_unet
 from dlshm.dlgenerators.generators import *
 import tensorflow as tf
 from skimage.transform import resize
-from keras_unet.models import custom_unet
 import pandas as pd
 import matplotlib as mpl
 
@@ -20,7 +20,15 @@ import matplotlib as mpl
 # User='Mariusz'
 User='Piotr'
 
-CURRENT_MODEL_NAME= 'ICSHM_DMG_DeepLabV3_E200w'
+# 'a' - augmented with flip
+# 'a2' - augmented without flip
+# 'o' - no augmentation, without flip, no weights
+# 'ob' - no augmentation, without flip, no weights, saved best of training process
+# 'obw' - no augmentation, without flip, saved best of training process, weighted
+# 'ab' - augmentation, with flip, no weights, saved best of training process
+
+
+CURRENT_MODEL_NAME= 'ICSHM_DMG_DEEPLABV3p_200obw'
 
 if User=='Mariusz':
     TASK_PATH = "D:/Datasets/Tokaido_Dataset" # sys.argv[1]
@@ -49,7 +57,7 @@ elif User=="Piotr":
 CLASS_NAMES = [ "background", "cracks", "reinforcement" ]
 
 EPOCHS=200
-BATCH_SIZE=32
+BATCH_SIZE=16
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
@@ -62,8 +70,15 @@ imgDMG_conv  = ICSHM_DMG_Converter(RES_X,RES_Y)
 data_manager = ICSHMDataManager( IMAGES_SOURCE_PATH, csv_ind=6 )
 data_manager.convert_data_to_numpy_format(imgDMG_conv, TRAIN_IMAGES_PATH)
 
-#model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, filters=nFILTERS, num_classes=nCLASSES, output_activation="softmax")
-model = DeeplabV3Plus((RES_Y,RES_X,N_CHANNELS), N_CLASSES)
+model_unet = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+model_vgg19a = build_vgg19_segmentation_model(input_shape=(RES_Y,RES_X,3), num_classes=N_CLASSES)
+model_vgg19b = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(RES_Y,RES_X,N_CHANNELS),  classes=N_CLASSES, classifier_activation="softmax")
+model_deeplab1 = DeepLabV3_1((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+model_deeplab2 = DeepLabV3_2((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+model_deeplabv3p = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+model_deeplabv3p101 = DeeplabV3Plus101((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+
+model = model_deeplabv3p
 model.summary()
 
 # weights = compute_class_weights(y)
@@ -82,10 +97,11 @@ model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w kome
 
 # Kompilacja modelu i wyswitlenie informacji:
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss=loss_fn, metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(N_CLASSES)])
+#model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss="categorical_crossentropy", metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(N_CLASSES)])
 model.summary()
 
 # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
-train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=True)
+train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
 validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
 test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
 
