@@ -13,6 +13,7 @@ from dlshm.dlmodels.trainer import *
 from dlshm.dlmodels.custom_models import *
 from dlshm.dlgenerators.generators import *
 from skimage.transform import resize
+from dlshm.dlimages.augmentations import augment_photo
 import pandas as pd
 import matplotlib as mpl
 
@@ -32,9 +33,8 @@ User='Piotr'
 # 'a' - augmented with flip
 # 'a2' - augmented without flip
 
-
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100'
-CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLAB_2_150a'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_100a'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_UNET_100'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_VGG19_100'
 
@@ -47,21 +47,18 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-    TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
+    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet4'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
-
-# info_fil
-# e = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
 
 
 class SegmentationRGBInputFileReader:   # Reading of the SOURCE images.
@@ -93,8 +90,8 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=150
-BATCH_SIZE=32
+EPOCHS=100
+BATCH_SIZE=16
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
@@ -140,7 +137,7 @@ model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 
 # Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
 dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.7, validation_ratio=0.1, sampleSize=-1)
-trainer = DLTrainer(CURRENT_MODEL_NAME, None, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
+trainer = DLTrainer(CURRENT_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
 model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
@@ -149,28 +146,28 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), l
 model.summary()
 
 # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
-train_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
-validation_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
-test_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
+train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_photo)
+validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES )
+test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES )
 
 # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
-# trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
-# trainer.plot_training_history()
+trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
+trainer.plot_training_history()
 
 # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
-# print("Evaluate on test data")
-# results = model.evaluate(test_gen, batch_size=1)
-# print("test results:", results)
+print("Evaluate on test data")
+results = model.evaluate(test_gen, batch_size=1)
+print("test results:", results)
 
 
 # Testowanie na danych testowych (nie walidacyjnych)
-# trainer.test_model(test_gen,test_dmg_segmentation)
-# dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
-#
-#
-# with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
-#      dfs.to_excel(writer, sheet_name='ICSHM', index=False)
-#      df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+trainer.test_model(test_gen,test_dmg_segmentation)
+dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
+
+
+with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
+     dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+     df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
 #gener_test(os.path.join( '/Users/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
-trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+#trainer.predict('/Users/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)

@@ -119,63 +119,12 @@ class DataSource:
         print('Validation set size :', self.validation_samples_size)
         print('Test set size :', self.test_samples_size)
 
-class DataGeneratorFromImageFilesAugmented(tf.keras.utils.Sequence):
-    'Generates data for Keras'
-
-    def __init__(self, files, batch_size=32, idim=(32, 32), odim=(32, 32), n_channels=3,
-                 n_classes=3, shuffle=True):
-        'Initialization'
-        self.idim = idim
-        self.odim = odim
-        self.batch_size = batch_size
-        self.files = files
-        self.n_channels = n_channels
-        self.n_classes = n_classes
-        self.shuffle = shuffle
-        self.on_epoch_end()
-        self.ranfomFiles=RandomSetParameter(files)
-        self.imageObj = ImageTrainingPairMultiscaleAugmented(idim[0],idim[1],odim[0]//idim[0])
-        self.data_X = np.empty((self.batch_size, *self.idim, self.n_channels), dtype=np.float32)
-        self.data_Y = np.empty((self.batch_size, *self.odim, self.n_classes), dtype=np.float32)
-
-    def __len__(self):
-        'Denotes the number of batches per epoch'
-        return int(np.floor(len(self.files*5) / self.batch_size))
-
-    def __getitem__(self, index):
-
-        'Generate one batch of data'
-        # Generate indexes of the batch
-        indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
-
-        # Find list of IDs
-        list_IDs_temp = [self.ranfomFiles.get() for k in indexes]
-
-        # Generate data
-        X, y = self.__data_generation(list_IDs_temp)
-        return X, y
-
-    def on_epoch_end(self):
-        'Updates indexes after each epoch'
-        self.indexes = np.arange(len(self.files))
-        if self.shuffle == True:
-            np.random.shuffle(self.indexes)
-
-    def __data_generation(self, list_IDs_temp):
-        'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
-        # Initialization
-        # Generate data
-        for i, ID in enumerate(list_IDs_temp):
-            self.data_X[i,], self.data_Y[i,] = self.imageObj.get_images(cv.imread(ID, cv.IMREAD_UNCHANGED) / 255.0)
-
-        return self.data_X, self.data_Y
-
 
 class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
     'Generates data for Keras'
 
     def __init__(self, files, batch_size=32, idim=(32, 32), odim=(32, 32), n_channels=3,
-                 n_classes=3, shuffle=True, Augmentation=False):
+                 n_classes=3, shuffle=True, augmentation_fn=None):
         'Initialization'
         self.idim = idim
         self.odim = odim
@@ -185,7 +134,7 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
         self.n_classes = n_classes
 
         self.shuffle = shuffle
-        self.Augmentation=Augmentation
+        self.augmentation_fn=augmentation_fn
         self.on_epoch_end()
 
     def __len__(self):
@@ -211,52 +160,6 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
         if self.shuffle == True:
             np.random.shuffle(self.indexes)
 
-    def augment_random_image_transformation(X, Y):
-
-        """Random flipping of the image (both vertical and horisontal) taking care on the seed - mask remains consistent with corresponding training image"""
-
-        rnI = tf.random.uniform(shape=[], minval=0, maxval=3, dtype=tf.int32)
-        if rnI == 0:
-            Xout = X
-            Yout = Y
-        elif rnI == 1:
-            Xout = tf.image.flip_left_right(X).numpy()
-            Yout = tf.image.flip_left_right(Y).numpy()
-        elif rnI == 2:
-            Xout = tf.image.flip_up_down(X).numpy()
-            Yout = tf.image.flip_up_down(Y).numpy()
-        elif rnI == 3:
-            angle = np.random.uniform(-30, 30)
-            (Xh, Xw) = X.shape[:2]
-            Xcenter = (Xw // 2, Xh // 2)
-            (Yh, Yw) = Y.shape[:2]
-            Ycenter = (Yw // 2, Yh // 2)
-            MX = cv.getRotationMatrix2D(Xcenter, np.int32(angle), 1.0)
-            MY = cv.getRotationMatrix2D(Ycenter, np.int32(angle), 1.0)
-            Xout = cv.warpAffine(X, MX, (Xw, Xh)).numpy()
-            Yout = cv.warpAffine(Y, MY, (Yw, Yh)).numpy()
-        return Xout, Yout
-    
-    def augment_random_image_quality(X):
-
-        """Random decreasing the quality of the image for the data augmentation purposes - applied ony to the image (withut affecting the corresponding mask)"""
-
-        rnI = tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32)
-        if rnI == 0:
-            Xout = X
-        elif rnI == 1:
-            Xout = tf.image.random_brightness(X, max_delta=0.8).numpy()       # Random brightness
-        elif rnI == 2:
-            Xout = tf.image.random_contrast(X, lower=0.1, upper=1.9).numpy()  # Random contrast
-        elif rnI == 3:
-            noiseIndic = f.random.uniform(shape=[], minval=0, maxval=1, dtype=tf.int32)
-            if noiseIndic == 0:
-                noise = tf.random.normal(shape=tf.shape(X), mean=0, stddev=50, dtype=tf.float32)
-            else:
-                noise = tf.cast(tf.random.uniform(shape=tf.shape(image), minval=0, maxval=1) < salt_prob, tf.float32) - tf.cast(tf.random.uniform(shape=tf.shape(image), minval=0, maxval=1) < pepper_prob, tf.float32) # salt - pepper
-            X = tf.add(X, noise)
-            Xout = tf.clip_by_value(X, 0.0, 1.0).numpy()  # Ensure pixel values are in [0, 1]
-        return Xout
         
     def __data_generation(self, list_IDs_temp):
         'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
@@ -269,18 +172,8 @@ class DataGeneratorFromNumpyFiles(tf.keras.utils.Sequence):
                 X[i,] = np.load(f)
                 Y[i,] = np.load(f)
 
-                if self.Augmentation:   # Data augmentation
-                    # Quality changing (NOT applied to ground truth data):
-
-                    #X[i,] = augment_random_image_quality(X[i,])
-
-                    X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
-                    X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.1).numpy()  # Random contrast
-                    if tf.random.uniform(()) > 0.5:
-                        X[i,] = tf.image.flip_left_right(X[i,]).numpy()  # horizontal flip
-                        Y[i,] = tf.image.flip_left_right(Y[i,]).numpy()  # horizontal flip
-                    # Transformations, e.g. rotation, shifting (applied also to the ground truth data):
-                    #X[i,], Y[i,] = augment_random_image_transformation(X[i,], Y[i,])
+        if self.augmentation_fn != None:
+            return self.augmentation_fn(X, Y)
 
         return X, Y
 
@@ -288,7 +181,7 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
     'Generates data for Keras'
 
     def __init__(self, files, batch_size=32, idim=(32, 32), odim=(32, 32), n_channels=3,
-                 n_classes=3, shuffle=True, Augmentation=False):
+                 n_classes=3, shuffle=True, augmentation_fn=None):
         'Initialization'
         self.idim = idim
         self.odim = odim
@@ -297,7 +190,7 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.shuffle = shuffle
-        self.Augmentation=Augmentation
+        self.augmentation_fn=augmentation_fn
         self.on_epoch_end()
         self.X = np.empty((len(files), *self.idim, self.n_channels), dtype=np.float32)
         self.Y = np.empty((len(files), *self.odim, self.n_classes), dtype=np.float32)
@@ -327,16 +220,10 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, indexes):
-        X = self.X[indexes,]
-        Y = self.Y[indexes,]
-        if self.Augmentation:
-            for i in range(X.shape[0]):
-                X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
-                X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.1).numpy()  # Random contrast
-                if tf.random.uniform(()) > 0.5:
-                    X[i,] = tf.image.flip_left_right(X[i,]).numpy()  # horizontal flip
-                    Y[i,] = tf.image.flip_left_right(Y[i,]).numpy()  # horizontal flip
-        return X, Y
+        if self.augmentation_fn != None:
+            return self.auggmentation_fn(self.X[indexes,], self.X[indexes,])
+        return self.X[indexes,], self.X[indexes,]
+
 
 class DataGeneratorHalfSequences(tf.keras.utils.Sequence):
     'Generates data for Keras'
