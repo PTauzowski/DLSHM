@@ -1,5 +1,6 @@
 import tensorflow as tf
 import cv2 as cv
+import numpy as np
 
 
 def augment_random_image_transformation(X, Y):

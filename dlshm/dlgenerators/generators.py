@@ -221,8 +221,8 @@ class DataGeneratorFromNumpyFilesMem(tf.keras.utils.Sequence):
 
     def __data_generation(self, indexes):
         if self.augmentation_fn != None:
-            return self.auggmentation_fn(self.X[indexes,], self.X[indexes,])
-        return self.X[indexes,], self.X[indexes,]
+            return self.augmentation_fn(self.X[indexes,], self.Y[indexes,])
+        return self.X[indexes,], self.Y[indexes,]
 
 
 class DataGeneratorHalfSequences(tf.keras.utils.Sequence):

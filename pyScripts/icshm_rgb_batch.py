@@ -12,6 +12,7 @@ from dlshm.dlimages.convert import *
 from dlshm.dlmodels.trainer import *
 from dlshm.dlmodels.custom_models import *
 from dlshm.dlgenerators.generators import *
+from dlshm.dlimages.augmentations import augment_photo
 from skimage.transform import resize
 import pandas as pd
 import matplotlib as mpl
@@ -158,7 +159,7 @@ def rgb_model_function( model_name, model, batch_size, epochs):
 
     # Przetwarzanie danych do trenowania i stworzenie obiektu trenera (może być niepotrzebny)
     dataSource = DataSource( TRAIN_IMAGES_PATH, train_ratio=0.7, validation_ratio=0.1, sampleSize=-1)
-    trainer = DLTrainer(CURRENT_MODEL_NAME, None, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
+    trainer = DLTrainer(CURRENT_MODEL_NAME, model, TASK_PATH)  # Tu wchodzi model, ale można dać "none" i będzie próbował model wydobyć z katalogu
 
     model=trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
@@ -168,13 +169,13 @@ def rgb_model_function( model_name, model, batch_size, epochs):
     model.summary()
 
     # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
-    train_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
-    validation_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
-    test_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, Augmentation=False)
+    train_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_photo)
+    validation_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
+    test_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
 
     # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
-    # trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
-    # trainer.plot_training_history()
+    trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
+    trainer.plot_training_history()
 
     # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
     print("Evaluate on test data")
@@ -183,20 +184,20 @@ def rgb_model_function( model_name, model, batch_size, epochs):
 
 
     # Testowanie na danych testowych (nie walidacyjnych)
-    # trainer.test_model(test_gen,test_dmg_segmentation)
-    # dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
+    trainer.test_model(test_gen,test_dmg_segmentation)
+    dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
 
 
-    # with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
-    #     dfs.to_excel(writer, sheet_name='ICSHM', index=False)
-    #     df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+    with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
+        dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+        df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
     #gener_test(os.path.join( '/Users/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
-    trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+    #trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
 
 
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p101_150ob', model_deeplabv3p, 16, 75)
-#rgb_model_function( 'ICSHM_RGB_UNET_50ab', model_unet, 32, 75)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_150a', model_deeplabv3p, 16, 150)
+rgb_model_function( 'ICSHM_RGB_UNET_150a', model_unet, 16, 150)
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_100a', model_deeplab1, 32, 100)
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_50ob', model_deeplab1, 32, 50)
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_2_50ob', model_deeplab2, 32, 50)
