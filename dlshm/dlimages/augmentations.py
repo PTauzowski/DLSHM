@@ -1,6 +1,7 @@
 import tensorflow as tf
 import cv2 as cv
 import numpy as np
+#import tensorflow_addons as tfa
 
 
 def augment_random_image_transformation(X, Y):
@@ -58,4 +59,45 @@ def augment_photo(X, Y):
     if tf.random.uniform([]) > 0.5:  # 50% probability
         X = tf.image.flip_left_right(X)
         Y = tf.image.flip_left_right(Y)
+    return X, Y
+
+
+
+def augment_all(X, Y):
+    for i in range(X.shape[0]):
+        X[i,] = tf.image.random_brightness(X[i,], max_delta=0.3).numpy()  # Random brightness
+        X[i,] = tf.image.random_contrast(X[i,], lower=0.7, upper=1.2).numpy()  # Random contrast
+
+        # Apply a random flip with 50% probability
+        if tf.random.uniform([]) > 0.5:  # 50% probability
+            X[i,] = tf.image.flip_left_right(X[i,])
+            Y[i,] = tf.image.flip_left_right(Y[i,])
+
+        # Apply random rotation in the range of ±30 degrees
+        # angle = tf.random.uniform([], minval=-30.0, maxval=30.0) * (np.pi / 180.0)  # Convert degrees to radians
+        # X[i,] = tfa.image.rotate(X[i,], angle, interpolation='BILINEAR')
+        # Y[i,] = tfa.image.rotate(Y[i,], angle, interpolation='NEAREST')  # Use nearest for segmentation masks
+
+
+        # Add Gaussian noise
+        random_stddev = tf.random.uniform([], minval=0.01, maxval=0.1)
+        noise = tf.random.normal(shape=tf.shape(X[i,]), mean=0.0, stddev=random_stddev)
+        X[i,] = tf.clip_by_value(X[i,] + noise, 0.0, 1.0)  # Ensure values remain in [0,1]
+
+        # # Apply random affine transformations (scaling, translation, shear)
+        # X = tfa.image.transform(X, tfa.image.compose_transforms([
+        #     tfa.image.angles_to_projective_transforms(
+        #         tf.random.uniform([], minval=-0.1, maxval=0.1), tf.shape(X)[0], tf.shape(X)[1]
+        #     )
+        # ]))
+        # Y = tfa.image.transform(Y, tfa.image.compose_transforms([
+        #     tfa.image.angles_to_projective_transforms(
+        #         tf.random.uniform([], minval=-0.1, maxval=0.1), tf.shape(Y)[0], tf.shape(Y)[1]
+        #     )
+        # ]))
+
+        # Apply Gamma Correction
+        gamma = tf.random.uniform([], minval=0.8, maxval=1.2)
+        X[i,] = tf.image.adjust_gamma(X[i,], gamma)
+
     return X, Y

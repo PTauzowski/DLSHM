@@ -13,7 +13,7 @@ from dlshm.dlmodels.trainer import *
 from dlshm.dlmodels.custom_models import *
 from dlshm.dlgenerators.generators import *
 from skimage.transform import resize
-from dlshm.dlimages.augmentations import augment_photo
+from dlshm.dlimages.augmentations import augment_photo, augment_all
 import pandas as pd
 import matplotlib as mpl
 
@@ -34,7 +34,7 @@ User='Piotr'
 # 'a2' - augmented without flip
 
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100'
-CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_100a'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_5aa'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_UNET_100'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_VGG19_100'
 
@@ -90,8 +90,8 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=100
-BATCH_SIZE=16
+EPOCHS=5
+BATCH_SIZE=32
 RES_X=640
 RES_Y=320
 N_CHANNELS=3
@@ -146,7 +146,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), l
 model.summary()
 
 # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
-train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_photo)
+train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_all)
 validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES )
 test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES )
 
@@ -169,5 +169,6 @@ with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpy
      dfs.to_excel(writer, sheet_name='ICSHM', index=False)
      df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
+print(tf.__version__, tf.keras.__version__)
 #gener_test(os.path.join( '/Users/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
-#trainer.predict('/Users/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+trainer.predict('/Users/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
