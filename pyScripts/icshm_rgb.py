@@ -34,7 +34,7 @@ User='Piotr'
 # 'a2' - augmented without flip
 
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100'
-CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_5aa'
+CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_200aa'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_UNET_100'
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_VGG19_100'
 
@@ -47,16 +47,16 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-    #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet4'
+    TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -90,7 +90,7 @@ def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
     return result
 
-EPOCHS=5
+EPOCHS=200
 BATCH_SIZE=32
 RES_X=640
 RES_Y=320
@@ -171,4 +171,4 @@ with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpy
 
 print(tf.__version__, tf.keras.__version__)
 #gener_test(os.path.join( '/Users/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
-trainer.predict('/Users/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)

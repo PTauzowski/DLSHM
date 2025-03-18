@@ -10,6 +10,7 @@ from flatbuffers.packer import float32
 from matplotlib import pyplot as plt
 from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
 from keras.metrics import Accuracy, CategoricalAccuracy
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
 # import datetime as dt
 
@@ -91,6 +92,8 @@ class DLTrainer:
 
     def train(self, train_gen, validation_gen, epochs, batch_size ):
 
+
+
         checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             self.model_filename,  # Filepath to save the model
             monitor="val_loss",  # Metric to track (e.g., "val_accuracy" for classification)
@@ -99,14 +102,20 @@ class DLTrainer:
             verbose=1  # Print a message when saving
         )
 
+        callbacks = [
+            checkpoint_callback,
+            ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=5, verbose=1),
+            EarlyStopping(monitor="val_loss", patience=10, verbose=1, restore_best_weights=True)
+        ]
+
         training_time_start = time.process_time()
         # logs = "logs/" + dt.datetime.now().strftime("%Y%m%d-%H%M%S")
         # tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs, histogram_freq = 1, profile_batch = '500,520')
-        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=[checkpoint_callback]) # , callbacks = [tboard_callback])
+        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=callbacks) # , callbacks = [tboard_callback])
         # Create a TensorBoard callback
-        #self.save_model()
+        self.save_model()
         self.training_time=time.process_time() - training_time_start
-        self.model = tf.keras.models.load_model(os.path.join(self.model_path, self.model_name + '.keras'), compile=False)
+        #self.model = tf.keras.models.load_model(os.path.join(self.model_path, self.model_name + '.keras'), compile=False)
 
     def test_model(self, test_gen, postprocess, extension='png'):
         test_path = os.path.join(self.task_path, 'TestResults')

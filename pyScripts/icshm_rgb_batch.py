@@ -12,7 +12,7 @@ from dlshm.dlimages.convert import *
 from dlshm.dlmodels.trainer import *
 from dlshm.dlmodels.custom_models import *
 from dlshm.dlgenerators.generators import *
-from dlshm.dlimages.augmentations import augment_photo
+from dlshm.dlimages.augmentations import augment_all, augment_brightness, augment_contrast, augment_noise, augment_gamma
 from skimage.transform import resize
 import pandas as pd
 import matplotlib as mpl
@@ -63,7 +63,7 @@ model_deeplabv3p101 = DeeplabV3Plus101((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 
 
 
-def rgb_model_function( model_name, model, batch_size, epochs):
+def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
     CURRENT_MODEL_NAME = model_name
 
     #CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100'
@@ -169,7 +169,7 @@ def rgb_model_function( model_name, model, batch_size, epochs):
     model.summary()
 
     # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
-    train_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_photo)
+    train_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_fn)
     validation_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
     test_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
 
@@ -196,8 +196,12 @@ def rgb_model_function( model_name, model, batch_size, epochs):
     #trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
 
 
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_150a', model_deeplabv3p, 16, 150)
-rgb_model_function( 'ICSHM_RGB_UNET_150a', model_unet, 16, 150)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es', model_deeplabv3p, None, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_br', model_deeplabv3p, augment_brightness, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_cn', model_deeplabv3p, augment_contrast, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_ns', model_deeplabv3p, augment_noise, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_gm', model_deeplabv3p, augment_gamma, batch_size=32, epochs=200)
+
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_100a', model_deeplab1, 32, 100)
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_50ob', model_deeplab1, 32, 50)
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_2_50ob', model_deeplab2, 32, 50)

@@ -65,8 +65,8 @@ def augment_photo(X, Y):
 
 def augment_all(X, Y):
     for i in range(X.shape[0]):
-        X[i,] = tf.image.random_brightness(X[i,], max_delta=0.3).numpy()  # Random brightness
-        X[i,] = tf.image.random_contrast(X[i,], lower=0.7, upper=1.2).numpy()  # Random contrast
+        X[i,] = tf.image.random_brightness(X[i,], max_delta=0.1).numpy()  # Random brightness
+        X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.2).numpy()  # Random contrast
 
         # Apply a random flip with 50% probability
         if tf.random.uniform([]) > 0.5:  # 50% probability
@@ -80,7 +80,7 @@ def augment_all(X, Y):
 
 
         # Add Gaussian noise
-        random_stddev = tf.random.uniform([], minval=0.01, maxval=0.1)
+        random_stddev = tf.random.uniform([], minval=0.01, maxval=0.05)
         noise = tf.random.normal(shape=tf.shape(X[i,]), mean=0.0, stddev=random_stddev)
         X[i,] = tf.clip_by_value(X[i,] + noise, 0.0, 1.0)  # Ensure values remain in [0,1]
 
@@ -97,7 +97,38 @@ def augment_all(X, Y):
         # ]))
 
         # Apply Gamma Correction
-        gamma = tf.random.uniform([], minval=0.8, maxval=1.2)
+        gamma = tf.random.uniform([], minval=0.9, maxval=1.1)
+        X[i,] = tf.image.adjust_gamma(X[i,], gamma)
+
+    return X, Y
+
+
+def augment_brightness(X, Y):
+    for i in range(X.shape[0]):
+        X[i,] = tf.image.random_brightness(X[i,], max_delta=0.1).numpy()  # Random brightness
+
+    return X, Y
+
+def augment_contrast(X, Y):
+    for i in range(X.shape[0]):
+        X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.2).numpy()  # Random contrast
+
+    return X, Y
+
+def augment_noise(X, Y):
+    for i in range(X.shape[0]):
+        X# Add Gaussian noise
+        random_stddev = tf.random.uniform([], minval=0.01, maxval=0.05)
+        noise = tf.random.normal(shape=tf.shape(X[i,]), mean=0.0, stddev=random_stddev)
+        X[i,] = tf.clip_by_value(X[i,] + noise, 0.0, 1.0)  # Ensure values remain in [0,1]
+
+    return X, Y
+
+
+def augment_gamma(X, Y):
+    for i in range(X.shape[0]):
+        # Apply Gamma Correction
+        gamma = tf.random.uniform([], minval=0.9, maxval=1.1)
         X[i,] = tf.image.adjust_gamma(X[i,], gamma)
 
     return X, Y
