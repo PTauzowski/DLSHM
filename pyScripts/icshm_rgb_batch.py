@@ -52,13 +52,13 @@ N_LAYERS=5
 N_FILTERS=21
 LEARNING_RATE = 0.001
 
-model_unet = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-model_vgg19a = build_vgg19_segmentation_model(input_shape=(RES_Y,RES_X,3), num_classes=N_CLASSES)
-model_vgg19b = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(RES_Y,RES_X,N_CHANNELS),  classes=N_CLASSES, classifier_activation="softmax")
-model_deeplab1 = DeepLabV3_1((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-model_deeplab2 = DeepLabV3_2((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+# model_unet = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+# model_vgg19a = build_vgg19_segmentation_model(input_shape=(RES_Y,RES_X,3), num_classes=N_CLASSES)
+# model_vgg19b = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(RES_Y,RES_X,N_CHANNELS),  classes=N_CLASSES, classifier_activation="softmax")
+# model_deeplab1 = DeepLabV3_1((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+# model_deeplab2 = DeepLabV3_2((RES_Y, RES_X, N_CHANNELS), N_CLASSES)N_CLASSES
 model_deeplabv3p = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-model_deeplabv3p101 = DeeplabV3Plus101((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+#model_deeplabv3p101 = DeeplabV3Plus101((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 # model = u_net_compiled(input_size=(RES_Y,RES_X,N_CHANNELS), n_filters=N_FILTERS, n_classes=N_FILTERS)
 
 
@@ -204,12 +204,26 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
         K.clear_session()
         gc.collect()
 
+del model_deeplabv3p
+model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es', model, None, batch_size=32, epochs=200)
+del model
 
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es', model_deeplabv3p, None, batch_size=32, epochs=200)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_br', model_deeplabv3p, augment_brightness, batch_size=32, epochs=200)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_cn', model_deeplabv3p, augment_contrast, batch_size=32, epochs=200)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_ns', model_deeplabv3p, augment_noise, batch_size=32, epochs=200)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_gm', model_deeplabv3p, augment_gamma, batch_size=32, epochs=200)
+model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_br', model, augment_brightness, batch_size=32, epochs=200)
+del model
+
+model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_cn', model, augment_contrast, batch_size=32, epochs=200)
+del model
+
+model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_ns', model, augment_noise, batch_size=32, epochs=200)
+del model
+
+model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_gm', model, augment_gamma, batch_size=32, epochs=200)
+del model
 
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_100a', model_deeplab1, 32, 100)
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_50ob', model_deeplab1, 32, 50)
