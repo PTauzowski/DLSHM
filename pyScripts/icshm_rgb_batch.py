@@ -15,6 +15,7 @@ from dlshm.dlgenerators.generators import *
 from dlshm.dlimages.augmentations import augment_all, augment_brightness, augment_contrast, augment_noise, augment_gamma
 from skimage.transform import resize
 import pandas as pd
+
 import matplotlib as mpl
 
 from dlshm.dlimages.postprocess import write_prediction_segmentated, write_prediction_segmentated2, write_smooth_masks,write_smooth_masks_refined, test_dmg_segmentation
@@ -22,6 +23,7 @@ from dlshm.dlimages.postprocess import write_prediction_segmentated, write_predi
 import sys
 
 import tensorflow as tf
+
 # print(tf.__version__)  # TensorFlow version
 # print(tf.keras.__path__)
 
@@ -36,6 +38,8 @@ User='Piotr'
 # 'ob' - no augmentation, without flip, no weights, saved best of training process
 # 'obw' - no augmentation, without flip, saved best of training process, weighted
 # 'ab' - augmentation, with flip, no weights, saved best of training process
+# 'es' - early stop and LR update
+# 'np' - not pretrained
 
 # CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100'
 # CURRENT_MODEL_NAME = 'ICSHM_RGB_DEEPLABV3p_150a2'
@@ -64,6 +68,9 @@ model_deeplabv3p = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 
 
 def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
+    train_gen = None
+    validation_gen = None
+    test_gen=None
     try:
         CURRENT_MODEL_NAME = model_name
 
@@ -170,9 +177,9 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
         model.summary()
 
         # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
-        train_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_fn)
-        validation_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
-        test_gen = DataGeneratorFromNumpyFilesMem(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
+        train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_fn)
+        validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
+        test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
 
         # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
         trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
@@ -194,36 +201,48 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
             df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
         #gener_test(os.path.join( '/Users/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
-        #trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+        trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+        del train_gen, validation_gen, test_gen
 
     finally:
         # Cleanup
         import tensorflow.keras.backend as K
         import gc
-        del model, trainer, train_gen, validation_gen, test_gen
         K.clear_session()
         gc.collect()
 
+
+
 del model_deeplabv3p
+
+import gc
+
+epochs=200
+model_basename='ICSHM_RGB_DEEPLABV3p_200'
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es', model, None, batch_size=32, epochs=200)
+rgb_model_function( model_basename+'_es', model, None, batch_size=32, epochs=epochs)
 del model
+gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_br', model, augment_brightness, batch_size=32, epochs=200)
+rgb_model_function( model_basename+'_es_a_br', model, augment_brightness, batch_size=32, epochs=epochs)
 del model
+gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_cn', model, augment_contrast, batch_size=32, epochs=200)
+rgb_model_function( model_basename+'_es_a_cn', model, augment_contrast, batch_size=32, epochs=epochs)
 del model
+gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_ns', model, augment_noise, batch_size=32, epochs=200)
+rgb_model_function( model_basename+'_es_a_ns', model, augment_noise, batch_size=32, epochs=epochs)
 del model
+gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( 'ICSHM_RGB_DEEPLABV3p_200es_a_gm', model, augment_gamma, batch_size=32, epochs=200)
+rgb_model_function( model_basename+'_es_a_gm', model, augment_gamma, batch_size=32, epochs=epochs)
 del model
+gc.collect()
 
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_100a', model_deeplab1, 32, 100)
 #rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_50ob', model_deeplab1, 32, 50)
