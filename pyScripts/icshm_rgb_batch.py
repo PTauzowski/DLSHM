@@ -40,6 +40,8 @@ User='Piotr'
 # 'ab' - augmentation, with flip, no weights, saved best of training process
 # 'es' - early stop and LR update
 # 'np' - not pretrained
+# 'x' - Xception in use
+# 'b' Bigger UNet model with N_LAYERS and N_FILTERS
 
 # CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100'
 # CURRENT_MODEL_NAME = 'ICSHM_RGB_DEEPLABV3p_150a2'
@@ -191,7 +193,7 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
         print("test results:", results)
 
 
-        # Testowanie na danych testowych (nie walidacyjnych)
+        # Testowanie na danych testowych (nie walidacyjnych)Unet-test
         trainer.test_model(test_gen,test_dmg_segmentation)
         dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
 
@@ -218,29 +220,40 @@ del model_deeplabv3p
 import gc
 
 epochs=200
-model_basename='ICSHM_RGB_DEEPLABV3p_200'
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+model_basename='ICSHM_RGB_UNETes_b'
+model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+#model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
 rgb_model_function( model_basename+'_es', model, None, batch_size=32, epochs=epochs)
 del model
 gc.collect()
 
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( model_basename+'_es_a_br', model, augment_brightness, batch_size=32, epochs=epochs)
+model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+#model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
+rgb_model_function( model_basename+'_a_br', model, augment_brightness, batch_size=32, epochs=epochs)
 del model
 gc.collect()
 
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( model_basename+'_es_a_cn', model, augment_contrast, batch_size=32, epochs=epochs)
+model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+#model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
+rgb_model_function( model_basename+'_all', model, augment_all, batch_size=32, epochs=epochs)
 del model
 gc.collect()
 
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( model_basename+'_es_a_ns', model, augment_noise, batch_size=32, epochs=epochs)
+model =custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+#model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
+rgb_model_function( model_basename+'_a_cn', model, augment_contrast, batch_size=32, epochs=epochs)
 del model
 gc.collect()
 
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( model_basename+'_es_a_gm', model, augment_gamma, batch_size=32, epochs=epochs)
+model =custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+#model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
+rgb_model_function( model_basename+'_a_ns', model, augment_noise, batch_size=32, epochs=epochs)
+del model
+gc.collect()
+
+model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+#model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
+rgb_model_function( model_basename+'_a_gm', model, augment_gamma, batch_size=32, epochs=epochs)
 del model
 gc.collect()
 

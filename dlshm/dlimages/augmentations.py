@@ -132,3 +132,10 @@ def augment_gamma(X, Y):
         X[i,] = tf.image.adjust_gamma(X[i,], gamma)
 
     return X, Y
+
+def augment_flip(X, Y):
+    for i in range(X.shape[0]):
+        if tf.random.uniform([]) > 0.5:  # 50% probability
+            X[i,] = tf.image.flip_left_right(X[i,])
+            Y[i,] = tf.image.flip_left_right(Y[i,])
+    return X, Y

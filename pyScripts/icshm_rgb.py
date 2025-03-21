@@ -32,6 +32,7 @@ User='Piotr'
 
 # 'a' - augmented with flip
 # 'a2' - augmented without flip
+# 'x' - augmented without flip
 
 #CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100'
 CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3p_200aa'
