@@ -1,7 +1,6 @@
 import os
 import cv2 as cv
 import numpy as np
-from dlshm.dlmodels.trainer import apply_crf
 from matplotlib import pyplot as plt
 import tensorflow as tf
 
@@ -113,24 +112,5 @@ def write_smooth_masks(pathname, x, y):
     plt.savefig(test_name)  # Save as PNG file
     plt.close()  # Close t
 
-def write_smooth_masks_refined(pathname, x, y):
-    path, filename = os.path.split(pathname)
-    name, extension = os.path.splitext(filename)
-    source_name = os.path.join(path, name + "_source") + extension
-    test_name = os.path.join(path, name + "_result") + extension
-    class_index = 0  # Class to visualize
 
-    prob_map_crf = apply_crf(x, y, num_iterations=10)
-    prob_map = prob_map_crf[:,:,class_index]
-
-    cv.imwrite(source_name, (x * 255).astype(np.uint8))
-
-    # Plot the heatmap
-    plt.imshow(prob_map, cmap='hot', interpolation='nearest')
-    plt.colorbar()
-    plt.title(f"Probability Heatmap for Class {class_index}")
-
-    # Save the heatmap to a file
-    plt.savefig(test_name)  # Save as PNG file
-    plt.close()  # Close t
 

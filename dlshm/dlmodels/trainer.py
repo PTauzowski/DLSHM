@@ -4,63 +4,14 @@ import time
 import cv2 as cv
 import numpy as np
 import pandas as pd
-import pydensecrf.densecrf as dcrf
 import tensorflow as tf
 from flatbuffers.packer import float32
 from matplotlib import pyplot as plt
-from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
-from keras.metrics import Accuracy, CategoricalAccuracy
-from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
+from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
 # import datetime as dt
 
 import numpy as np
-
-
-def apply_crf(image, predicted_probs, num_iterations=10):
-    """
-    Apply DenseCRF to refine segmentation.
-
-    Args:
-    - image: Input image (H, W, 3)
-    - predicted_probs: Softmax probabilities from the model (C, H, W)
-    - num_iterations: Number of CRF inference iterations
-
-    Returns:
-    - Refined segmentation map
-    """
-    H, W = image.shape[:2]
-    num_classes = predicted_probs.shape[2]  # Assuming predicted_probs shape is (C, H, W)
-
-    # Flatten the image dimensions to (H * W)
-    image_flat = image.reshape((-1, 3))  # Shape: (H * W, 3)
-    predicted_probs_flat = predicted_probs.reshape((num_classes, -1))  # Shape: (C, H * W)
-
-    # Initialize DenseCRF model
-    d = dcrf.DenseCRF2D(W, H, num_classes)
-
-    # Create unary potential from softmax predictions
-    unary = unary_from_softmax(predicted_probs_flat)
-    d.setUnaryEnergy(unary)
-
-    # Add pairwise potentials (spatial and bilateral)
-    # Fix: Removed the 'shape' argument from `create_pairwise_bilateral`
-    d.addPairwiseEnergy(create_pairwise_gaussian(sdims=(3, 3)), compat=3)  # Spatial term
-    d.addPairwiseEnergy(create_pairwise_bilateral(sdims=(50, 50), schan=(20, 20, 20), img=image), compat=10)  # Bilateral term
-
-    # Perform inference with iterations
-    Q = d.inference(num_iterations)
-
-    # Get final refined segmentation
-    refined_segmentation = np.argmax(Q, axis=0).reshape((H, W))
-    return refined_segmentation
-
-
-def psnr(super_resolution, high_resolution):
-    """Compute the peak signal-to-noise ratio, measures quality of image."""
-    # Max value of pixel is 255
-    psnr_value = tf.image.psnr(high_resolution, super_resolution, max_val=1)[0]
-    return psnr_value
 
 
 

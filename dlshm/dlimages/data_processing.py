@@ -6,8 +6,6 @@ from PIL import Image
 import pandas as pd
 from matplotlib import image as mpimg, pyplot as plt
 
-from dlshm.dlimages.convert import rgb2labnorm, labnorm2rgb
-
 
 class ICSHM_RGB_Converter:
     def __init__(self,resX,resY):
@@ -213,13 +211,13 @@ class ICSHMDataManager:
             os.makedirs(dataset_path)
         N=len(self.idx_valid)
         for i, idx in enumerate(self.idx_valid):
-            filename = os.path.join(dataset_path,os.path.basename(self.data_csv.iloc[idx][0]))+'.npy'
+            filename = os.path.join(dataset_path,os.path.basename(self.data_csv.iloc[idx, 0].replace('\\', '/')))+'.npy'
             if not os.path.exists(filename):
                 try:
-                    imageName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx][0])
-                    labName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx][1])
-                    dmgName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx][2])
-                    depthName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx][3])
+                    imageName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx, 0].replace('\\', '/'))
+                    labName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx, 1].replace('\\', '/'))
+                    dmgName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx, 2].replace('\\', '/'))
+                    depthName = os.path.join(self.tokaido_path, self.data_csv.iloc[idx, 3].replace('\\', '/'))
 
                     x, y = process(imageName, labName, dmgName, depthName )
 

@@ -5,7 +5,6 @@ import tensorflow as tf
 import random
 import cv2 as cv
 
-from dlshm.dlimages.convert import ImageTrainingPairMultiscaleAugmented,RandomSetParameter
 
 def gener_test(pathName, data_generator, scope=-1):
     N=scope
