@@ -176,6 +176,8 @@ def DeeplabV3Plus(image_size, num_classes, output_activation='softmax'):
          weights="imagenet", include_top=False, input_tensor=model_input
      )
 
+    # weights = "imagenet", include_top = False, input_tensor = model_input
+
     x = resnet50.get_layer("conv4_block6_2_relu").output
     x = DilatedSpatialPyramidPooling(x)
 

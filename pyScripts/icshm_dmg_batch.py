@@ -212,37 +212,37 @@ model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, f
 # gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3es', model, None, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es', model, None, batch_size=32, epochs=200)
 del model
 gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3es_all', model, augment_fn=augment_all, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_all', model, augment_fn=augment_all, batch_size=32, epochs=200)
 del model
 gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3es_br', model, augment_fn=augment_brightness, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_br', model, augment_fn=augment_brightness, batch_size=32, epochs=200)
 del model
 gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3es_cn', model, augment_fn=augment_contrast, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_cn', model, augment_fn=augment_contrast, batch_size=32, epochs=200)
 del model
 gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3es_gm', model, augment_fn=augment_gamma, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_gm', model, augment_fn=augment_gamma, batch_size=32, epochs=200)
 del model
 gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3es_ns', model, augment_fn=augment_noise, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_ns', model, augment_fn=augment_noise, batch_size=32, epochs=200)
 del model
 gc.collect()
 
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3es_fl', model, augment_fn=augment_flip, batch_size=32, epochs=200)
+rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_fl', model, augment_fn=augment_flip, batch_size=32, epochs=200)
 del model
 gc.collect()
 
