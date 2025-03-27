@@ -267,7 +267,7 @@ epochs=200
 #
 
 
-model_basename='ICSHM_RGB_DEEPLABV3p_es'
+model_basename='ICSHM_RGB_DEEPLABV3p_np'
 model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 rgb_model_function( model_basename, model, None, batch_size=32, epochs=epochs)
 del model
