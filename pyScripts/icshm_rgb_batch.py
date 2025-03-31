@@ -13,7 +13,7 @@ from dlshm.dlmodels.trainer import *
 from dlshm.dlmodels.custom_models import *
 from dlshm.dlgenerators.generators import *
 from dlshm.dlimages.augmentations import augment_all, augment_brightness, augment_contrast, augment_noise, \
-    augment_gamma, augment_flip
+    augment_gamma, augment_flip, augment_rotation
 from skimage.transform import resize
 import pandas as pd
 
@@ -184,6 +184,8 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
         validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
         test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
 
+        #gener_test(os.path.join('/home/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
+
         # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
         trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
         trainer.plot_training_history()
@@ -222,7 +224,8 @@ import gc
 
 epochs=200
 
-# model_basename='ICSHM_RGB_UNETes'
+model_basename='ICSHM_RGB_UNETes'
+
 # model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 # #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
 # rgb_model_function( model_basename, model, None, batch_size=32, epochs=epochs)
@@ -247,11 +250,13 @@ epochs=200
 # del model
 # gc.collect()
 #
+
 # model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 # #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
 # rgb_model_function( model_basename+'_a_gm', model, augment_gamma, batch_size=32, epochs=epochs)
 # del model
 # gc.collect()
+
 #
 # model =custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 # #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
@@ -266,17 +271,25 @@ epochs=200
 # gc.collect()
 #
 
+# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
+# rgb_model_function( model_basename+'_a_rot', model, augment_rotation, batch_size=32, epochs=epochs)
+# del model
+# gc.collect()
+
 
 model_basename='ICSHM_RGB_DEEPLABV3p_np'
 # model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 # rgb_model_function( model_basename, model, None, batch_size=32, epochs=epochs)
 # del model
 # gc.collect()
-#
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_all', model, augment_fn=augment_all, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
+
+
+model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES,is_pretrained=False)
+rgb_model_function( model_basename+'_a_all', model, augment_fn=augment_all, batch_size=32, epochs=epochs)
+del model
+gc.collect()
+
 #
 # model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 # rgb_model_function( model_basename+'_a_br', model, augment_fn=augment_brightness, batch_size=32, epochs=epochs)
@@ -298,14 +311,9 @@ model_basename='ICSHM_RGB_DEEPLABV3p_np'
 # del model
 # gc.collect()
 
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-rgb_model_function( model_basename+'_a_fl', model, augment_fn=augment_flip, batch_size=32, epochs=epochs)
-del model
-gc.collect()
+# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES,is_pretrained=True)
+# rgb_model_function( model_basename+'_a_rot', model, augment_fn=augment_rotation, batch_size=32, epochs=epochs)
+# del model
+# gc.collect()
 
 
-
-
-#rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_100a', model_deeplab1, 32, 100)
-#rgb_model_function( 'ICSHM_RGB_DEEPLAB_1_50ob', model_deeplab1, 32, 50)
-#rgb_model_function( 'ICSHM_RGB_DEEPLAB_2_50ob', model_deeplab2, 32, 50)

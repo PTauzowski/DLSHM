@@ -170,11 +170,16 @@ def DilatedSpatialPyramidPooling(dspp_input):
     output = convolution_block(x, kernel_size=1)
     return output
 
-def DeeplabV3Plus(image_size, num_classes, output_activation='softmax'):
+def DeeplabV3Plus(image_size, num_classes, output_activation='softmax',is_pretrained=True):
     model_input = Input(shape=(image_size[0], image_size[1], image_size[2]))
-    resnet50 =  applications.ResNet50(
-         weights=None, include_top=False, input_tensor=model_input
-     )
+    weights=None
+
+    if is_pretrained:
+        weights="imagenet"
+
+    resnet50 = applications.ResNet50(
+        weights=weights, include_top=False, input_tensor=model_input
+    )
 
     # weights = "imagenet", include_top = False, input_tensor = model_input
 
