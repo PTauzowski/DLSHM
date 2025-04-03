@@ -119,6 +119,38 @@ def augment_all(X, Y):
     X, Y = augment_brightness(X,Y)
     X, Y = augment_contrast(X,Y)
     X, Y = augment_flip(X,Y)
+    X, Y = augment_rotation(X, Y)
+    return X, Y
+
+def augment_unet_rgb(X, Y):
+    X, Y = augment_flip(X,Y)
+    return X, Y
+
+
+def augment_dl3_rgb(X, Y):
+    X, Y = augment_flip(X,Y)
+    X, Y = augment_rotation(X, Y)
+    return X, Y
+
+def augment_dl3_rgb_np(X, Y):
+    X, Y = augment_rotation(X, Y)
+    return X, Y
+
+
+def augment_unet_dmg(X, Y):
     X, Y = augment_noise(X,Y)
+    return X, Y
+
+def augment_dl3_dmg_np(X, Y):
+    X, Y = augment_gamma(X, Y)
+    X, Y = augment_flip(X,Y)
+    X, Y = augment_rotation(X, Y)
+    return X, Y
+
+def augment_dl3_dmg(X, Y):
+    X, Y = augment_gamma(X,Y)
+    X, Y = augment_brightness(X,Y)
+    X, Y = augment_noise(X,Y)
+    X, Y = augment_flip(X,Y)
     X, Y = augment_rotation(X, Y)
     return X, Y

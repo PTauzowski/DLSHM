@@ -5,7 +5,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from dlshm.dlimages.data_processing import ICSHM_DMG_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter, compute_class_weights
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
 from dlshm.dlimages.augmentations import augment_all, augment_brightness, augment_contrast, augment_noise, \
-    augment_gamma, augment_flip, augment_rotation
+    augment_gamma, augment_flip, augment_rotation, augment_unet_dmg, augment_dl3_dmg, augment_dl3_dmg_np
 
 import pandas as pd
 from dlshm.dlimages.convert import *
@@ -174,7 +174,26 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
        dfs.to_excel(writer, sheet_name='ICSHM', index=False)
        df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
+
+
 import gc
+
+# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+# rgb_model_function( 'ICSHM_DMG_UNETa', model, augment_unet_dmg, batch_size=32, epochs=200)
+# del model
+# gc.collect()
+
+# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
+# rgb_model_function( 'ICSHM_DMG_DEEPLABV3a', model, augment_fn=augment_dl3_dmg, batch_size=32, epochs=200)
+# del model
+# gc.collect()
+
+model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
+rgb_model_function( 'ICSHM_DMG_DEEPLABV3a_np', model, augment_fn=augment_dl3_dmg_np, batch_size=32, epochs=200)
+del model
+gc.collect()
+
+
 
 #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 # rgb_model_function( 'ICSHM_DMG_UNETes', model, None, batch_size=32, epochs=200)
@@ -222,15 +241,16 @@ import gc
 # del model
 # gc.collect()
 #
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_all', model, augment_fn=augment_all, batch_size=32, epochs=200)
-del model
-gc.collect()
 
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=False)
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_np_all', model, augment_fn=augment_all, batch_size=32, epochs=200)
-del model
-gc.collect()
+# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
+# rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_all', model, augment_fn=augment_all, batch_size=32, epochs=200)
+# del model
+# gc.collect()
+#
+# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=False)
+# rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_np_all', model, augment_fn=augment_all, batch_size=32, epochs=200)
+# del model
+# gc.collect()
 
 #
 # model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
@@ -253,15 +273,15 @@ gc.collect()
 # del model
 # gc.collect()
 
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_rot', model, augment_fn=augment_rotation, batch_size=32, epochs=200)
-del model
-gc.collect()
-
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=False)
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_np_rot', model, augment_fn=augment_rotation, batch_size=32, epochs=200)
-del model
-gc.collect()
+# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
+# rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_rot', model, augment_fn=augment_rotation, batch_size=32, epochs=200)
+# del model
+# gc.collect()
+#
+# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=False)
+# rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_np_rot', model, augment_fn=augment_rotation, batch_size=32, epochs=200)
+# del model
+# gc.collect()
 
 # model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
 # rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es_fl', model, augment_fn=augment_flip, batch_size=32, epochs=200)
