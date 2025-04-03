@@ -154,3 +154,47 @@ def augment_dl3_dmg(X, Y):
     X, Y = augment_flip(X,Y)
     X, Y = augment_rotation(X, Y)
     return X, Y
+
+
+def augment_cutmix(images, masks, alpha=1.0):
+    """Applies CutMix to a batch of images and masks.
+
+    Args:
+        images (numpy.ndarray): Batch of images (batch_size, H, W, C).
+        masks (numpy.ndarray): Corresponding segmentation masks (batch_size, H, W, num_classes).
+        alpha (float): Parameter for the Beta distribution.
+
+    Returns:
+        mixed_images (numpy.ndarray): Augmented image batch.
+        mixed_masks (numpy.ndarray): Augmented mask batch.
+    """
+    batch_size, h, w, c = images.shape
+    indices = np.random.permutation(batch_size)  # Shuffle indices within the batch
+    lambda_val = np.random.beta(alpha, alpha)  # Sample lambda from Beta distribution
+
+    # Randomly generate a bounding box
+    cut_x = np.random.randint(0, w)
+    cut_y = np.random.randint(0, h)
+    cut_w = w // 2  # You can make this random
+    cut_h = h // 2
+
+    # Compute bounding box coordinates
+    bbx1 = np.clip(cut_x - cut_w // 2, 0, w)
+    bby1 = np.clip(cut_y - cut_h // 2, 0, h)
+    bbx2 = np.clip(cut_x + cut_w // 2, 0, w)
+    bby2 = np.clip(cut_y + cut_h // 2, 0, h)
+
+    # Apply CutMix augmentation
+    mixed_images = images.copy()
+    mixed_masks = masks.copy()
+
+    for i in range(batch_size):
+        j = indices[i]  # Select a random image from the same batch
+
+        # Replace patch in image
+        mixed_images[i, bby1:bby2, bbx1:bbx2, :] = images[j, bby1:bby2, bbx1:bbx2, :]
+
+        # Replace patch in mask
+        mixed_masks[i, bby1:bby2, bbx1:bbx2, :] = masks[j, bby1:bby2, bbx1:bbx2, :]
+
+    return mixed_images, mixed_masks

@@ -5,7 +5,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from dlshm.dlimages.data_processing import ICSHM_DMG_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter, compute_class_weights
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
 from dlshm.dlimages.augmentations import augment_all, augment_brightness, augment_contrast, augment_noise, \
-    augment_gamma, augment_flip, augment_rotation, augment_unet_dmg, augment_dl3_dmg, augment_dl3_dmg_np
+    augment_gamma, augment_flip, augment_rotation, augment_unet_dmg, augment_dl3_dmg, augment_dl3_dmg_np, augment_cutmix
 
 import pandas as pd
 from dlshm.dlimages.convert import *
@@ -41,17 +41,17 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    #TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
-    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM"
+    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    #TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM"
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
     #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-    #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
-    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-    TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet/DMG'
+    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet/DMG'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 #info_file = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
@@ -188,10 +188,10 @@ import gc
 # del model
 # gc.collect()
 
-model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
-rgb_model_function( 'ICSHM_DMG_DEEPLABV3a_np', model, augment_fn=augment_dl3_dmg_np, batch_size=32, epochs=200)
-del model
-gc.collect()
+# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
+# rgb_model_function( 'ICSHM_DMG_DEEPLABV3a_np', model, augment_fn=augment_dl3_dmg_np, batch_size=32, epochs=200)
+# del model
+# gc.collect()
 
 
 
@@ -235,6 +235,12 @@ gc.collect()
 # rgb_model_function( 'ICSHM_DMG_UNETes_fl', model, augment_fn=augment_flip, batch_size=32, epochs=200)
 # del model
 # gc.collect()
+
+model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+rgb_model_function( 'ICSHM_DMG_UNETes_cut', model, augment_fn=augment_cutmix, batch_size=32, epochs=200)
+del model
+gc.collect()
+
 
 # model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax")
 # rgb_model_function( 'ICSHM_DMG_DEEPLABV3np_es', model, None, batch_size=32, epochs=200)
