@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 import pydensecrf.densecrf as dcrf
 import tensorflow as tf
+
+from tensorflow import keras
 from flatbuffers.packer import float32
 from matplotlib import pyplot as plt
-from pydensecrf.utils import unary_from_softmax, create_pairwise_bilateral, create_pairwise_gaussian
-from keras.metrics import Accuracy, CategoricalAccuracy
+from tensorflow.keras.metrics import Accuracy, CategoricalAccuracy
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
 # import datetime as dt
@@ -17,52 +18,11 @@ from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, Early
 import numpy as np
 
 
-def apply_crf(image, predicted_probs, num_iterations=10):
-    """
-    Apply DenseCRF to refine segmentation.
-
-    Args:
-    - image: Input image (H, W, 3)
-    - predicted_probs: Softmax probabilities from the model (C, H, W)
-    - num_iterations: Number of CRF inference iterations
-
-    Returns:
-    - Refined segmentation map
-    """
-    H, W = image.shape[:2]
-    num_classes = predicted_probs.shape[2]  # Assuming predicted_probs shape is (C, H, W)
-
-    # Flatten the image dimensions to (H * W)
-    image_flat = image.reshape((-1, 3))  # Shape: (H * W, 3)
-    predicted_probs_flat = predicted_probs.reshape((num_classes, -1))  # Shape: (C, H * W)
-
-    # Initialize DenseCRF model
-    d = dcrf.DenseCRF2D(W, H, num_classes)
-
-    # Create unary potential from softmax predictions
-    unary = unary_from_softmax(predicted_probs_flat)
-    d.setUnaryEnergy(unary)
-
-    # Add pairwise potentials (spatial and bilateral)
-    # Fix: Removed the 'shape' argument from `create_pairwise_bilateral`
-    d.addPairwiseEnergy(create_pairwise_gaussian(sdims=(3, 3)), compat=3)  # Spatial term
-    d.addPairwiseEnergy(create_pairwise_bilateral(sdims=(50, 50), schan=(20, 20, 20), img=image), compat=10)  # Bilateral term
-
-    # Perform inference with iterations
-    Q = d.inference(num_iterations)
-
-    # Get final refined segmentation
-    refined_segmentation = np.argmax(Q, axis=0).reshape((H, W))
-    return refined_segmentation
-
-
 def psnr(super_resolution, high_resolution):
     """Compute the peak signal-to-noise ratio, measures quality of image."""
     # Max value of pixel is 255
     psnr_value = tf.image.psnr(high_resolution, super_resolution, max_val=1)[0]
     return psnr_value
-
-
 
 
 class DLTrainer:
@@ -91,9 +51,6 @@ class DLTrainer:
         self.model.save(os.path.join(model_path, self.model_name)+'.keras')
 
     def train(self, train_gen, validation_gen, epochs, batch_size ):
-
-
-
         checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             self.model_filename,  # Filepath to save the model
             monitor="val_loss",  # Metric to track (e.g., "val_accuracy" for classification)
@@ -109,13 +66,9 @@ class DLTrainer:
         ]
 
         training_time_start = time.process_time()
-        # logs = "logs/" + dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-        # tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs, histogram_freq = 1, profile_batch = '500,520')
-        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=callbacks) # , callbacks = [tboard_callback])
-        # Create a TensorBoard callback
+        self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=callbacks)
         self.save_model()
         self.training_time=time.process_time() - training_time_start
-        #self.model = tf.keras.models.load_model(os.path.join(self.model_path, self.model_name + '.keras'), compile=False)
 
     def test_model(self, test_gen, postprocess, extension='png'):
         test_path = os.path.join(self.task_path, 'TestResults')
@@ -378,13 +331,6 @@ class DLTrainer:
         bin_iou = binTP / (binTP + binFP + binFN + epsilon)
         mean_bin_iou = np.sum(bin_iou) / n_masks
         global_bin_iou = np.sum(binTP) / np.sum(binTP + binFP + binFN + epsilon)
-
-        # DataFrame 1
-        # Categorical accuracy
-        # 'Global accuracy':
-        # 'Weighted accuracy' :
-        # 'Mean IOU'
-        # 'Global IOU'
 
         dfs = pd.DataFrame({'Categorical accuracy':[cat_accuracy], 'Global accuracy': [global_accuracy], 'Weighted accuracy' : [weighted_accuracy], 'Mean IOU' : [mean_iou], 'Global IOU' : [global_iou] })
         df = pd.DataFrame({'Class': CLASS_NAMES, 'Class accuracy': class_accuracy, 'Precision': precision, 'Recall' : recall, 'F1 Score (Dice Coefficient)': dsc, 'Specificity':specificity, 'Balanced accuracy':balanced_accuracy, 'IOU': iou})

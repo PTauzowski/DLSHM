@@ -1,5 +1,5 @@
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (
+from keras.models import Model
+from keras.layers import (
         BatchNormalization,
         Conv2D,
         Conv2DTranspose,
@@ -116,7 +116,7 @@ def custom_unet(
     use_batch_norm=True,
     upsample_mode="deconv",  # 'deconv' or 'simple'
     dropout=0.3,
-    dropout_change_per_layer=0.0,
+    dropout_change_per_layer=0.1,
     dropout_type="spatial",
     use_dropout_on_upsampling=False,
     use_attention=False,

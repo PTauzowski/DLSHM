@@ -7,6 +7,8 @@ from dlshm.dlimages.data_processing import ICSHM_RGB_Converter,ICSHM_RGB_4_Conve
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
 from dlshm.dlmodels.c_unet import custom_unet
 
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 from dlshm.dlimages.convert import *
 from dlshm.dlmodels.trainer import *
@@ -24,6 +26,7 @@ from dlshm.dlimages.postprocess import write_prediction_segmentated, write_predi
 import sys
 
 import tensorflow as tf
+import segmentation_models as sm
 
 # print(tf.__version__)  # TensorFlow version
 # print(tf.keras.__path__)
@@ -55,7 +58,7 @@ RES_X=640
 RES_Y=320
 N_CHANNELS=3
 N_CLASSES=4
-N_LAYERS=5
+N_LAYERS=6
 N_FILTERS=24
 LEARNING_RATE = 0.001
 
@@ -64,7 +67,7 @@ LEARNING_RATE = 0.001
 # model_vgg19b = tf.keras.applications.VGG16(include_top=True, weights=None, input_shape=(RES_Y,RES_X,N_CHANNELS),  classes=N_CLASSES, classifier_activation="softmax")
 # model_deeplab1 = DeepLabV3_1((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 # model_deeplab2 = DeepLabV3_2((RES_Y, RES_X, N_CHANNELS), N_CLASSES)N_CLASSES
-model_deeplabv3p = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
+#model_deeplabv3p = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 #model_deeplabv3p101 = DeeplabV3Plus101((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
 # model = u_net_compiled(input_size=(RES_Y,RES_X,N_CHANNELS), n_filters=N_FILTERS, n_classes=N_FILTERS)
 
@@ -218,13 +221,13 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
 
 
 
-del model_deeplabv3p
+#del model_deeplabv3p
 
 import gc
 
 epochs=200
 
-model_basename='ICSHM_RGB_UNETes'
+model_basename='ICSHM_RGB_UNETsm'
 
 # model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 # #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
@@ -279,11 +282,10 @@ model_basename='ICSHM_RGB_UNETes'
 # gc.collect()
 
 model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-gc.collect()
-#model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-rgb_model_function( model_basename+'_a_cut', model, augment_cutmix, batch_size=32, epochs=epochs)
+#model = sm.Unet("resnet18", input_shape=(RES_Y,RES_X,N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+rgb_model_function( model_basename+'_a_cut', model, augment_cutmix, batch_size=16, epochs=epochs)
 del model
-
+gc.collect()
 
 #model_basename='ICSHM_RGB_DEEPLABV3p_es'
 
