@@ -1,5 +1,7 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["SM_FRAMEWORK"] = "tf.keras"
 #import keras.backend as K
 
 #from dlshm.dlimages import data_processing
@@ -94,16 +96,16 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
             TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
         elif User=="Piotr":
-            TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+            TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
             #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
             MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
             #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-            #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
-            IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+            IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+            #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
             #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
             PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
             #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-            TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet4'
+            TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
             TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -219,181 +221,101 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
         K.clear_session()
         gc.collect()
 
+def multi_augmentation_training_structural(model_basename, create_model_fn, batch_size, epochs):
+    tf.keras.backend.clear_session()
+    print("* MULTI augmented training for model :",model_basename)
+    model = create_model_fn()
+    rgb_model_function( model_basename+'_none', model, None, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
+
+    model = create_model_fn()
+    rgb_model_function( model_basename+'_br', model, augment_brightness, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
+
+    model = create_model_fn()
+    rgb_model_function( model_basename+'_cn', model, augment_contrast, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
+
+    model = create_model_fn()
+    rgb_model_function( model_basename+'_gm', model, augment_gamma, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
+
+    model = create_model_fn()
+    rgb_model_function( model_basename+'_ns', model, augment_noise, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
+
+    model = create_model_fn()
+    rgb_model_function( model_basename+'_fl', model, augment_flip, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
+
+    model = create_model_fn()
+    rgb_model_function( model_basename+'_rot', model, augment_rotation, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
+
+    model = model = create_model_fn()
+    rgb_model_function(model_basename + '_cut', model, augment_cutmix, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
+
+    model = create_model_fn()
+    rgb_model_function(model_basename + '_all', model, augment_all, batch_size=batch_size, epochs=epochs)
+    tf.keras.backend.clear_session()
+    del model
+    gc.collect()
 
 
-#del model_deeplabv3p
+
 
 import gc
 
+# available models: ['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152', 'seresnet18', 'seresnet34', 'seresnet50', 'seresnet101',
+#                   'seresnet152', 'seresnext50', 'seresnext101', 'senet154', 'resnext50', 'resnext101', 'vgg16', 'vgg19', 'densenet121',
+#                   'densenet169', 'densenet201', 'inceptionresnetv2', 'inceptionv3', 'mobilenet', 'mobilenetv2', 'efficientnetb0',
+#                   'efficientnetb1', 'efficientnetb2', 'efficientnetb3', 'efficientnetb4', 'efficientnetb5', 'efficientnetb6', 'efficientnetb7']
+
 epochs=200
+batch_size=32
 
-model_basename='ICSHM_RGB_UNETsm'
+model_basename='ICSHM_RGB_UNET_rn18'
+create_unet_sm = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+#multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
 
-# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( model_basename, model, None, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
+model_basename='ICSHM_RGB_UNET_rn101'
+create_unet_sm = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
+
+model_basename='ICSHM_RGB_UNET_in3'
+create_unet_sm = lambda: sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
+
+
+# model_basename='ICSHM_RGB_UNET70'
+# create_custom_unet = lambda : custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
+# multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_custom_unet, batch_size=batch_size, epochs=epochs)
 #
-# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( model_basename+'_a_all', model, augment_all, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
+# model_basename='ICSHM_RGB_DEEPLABV3p'
+# create_model_deeplab = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
+# multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_model_deeplab, batch_size=batch_size, epochs=epochs)
 #
-# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( model_basename+'_a_br', model, augment_brightness, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-#
-# model =custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( model_basename+'_a_cn', model, augment_contrast, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-#
-
-# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( model_basename+'_a_gm', model, augment_gamma, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-#
-# model =custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( model_basename+'_a_ns', model, augment_noise, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-#
-
-# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( model_basename+'_a_fl', model, augment_flip, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
+# model_basename='ICSHM_RGB_DEEPLABV3p_np'
+# create_model_deeplab = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=False)
+# multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_model_deeplab, batch_size=batch_size, epochs=epochs)
 
 
-# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# #model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( model_basename+'_a_rot', model, augment_rotation, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-#model = sm.Unet("resnet18", input_shape=(RES_Y,RES_X,N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
-rgb_model_function( model_basename+'_a_cut', model, augment_cutmix, batch_size=16, epochs=epochs)
-del model
-gc.collect()
-
-#model_basename='ICSHM_RGB_DEEPLABV3p_es'
-
-# model = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
-# rgb_model_function( 'ICSHM_RGB_UNETa', model, augment_unet_rgb, batch_size=16, epochs=200)
-# del model
-# gc.collect()
-
-# model = DeeplabV3PlusD4((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
-# rgb_model_function( 'ICSHM_RGB_DEEPLABV3a_D4', model, augment_fn=augment_dl3_rgb, batch_size=32, epochs=200)
-# del model
-# gc.collect()
-#
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=True)
-# rgb_model_function( 'ICSHM_RGB_DEEPLABV3a_24', model, augment_fn=augment_dl3_rgb, batch_size=32, epochs=200)
-# del model
-# gc.collect()
-
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES, output_activation="softmax",is_pretrained=False)
-# rgb_model_function( 'ICSHM_RGB_DEEPLABV3a_np', model, augment_fn=augment_dl3_rgb_np, batch_size=32, epochs=200)
-# del model
-# gc.collect()
-
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename, model, None, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES,is_pretrained=False)
-# rgb_model_function( model_basename+'_a_all', model, augment_fn=augment_all, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-#
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_br', model, augment_fn=augment_brightness, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-#
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_cn', model, augment_fn=augment_contrast, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-#
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_gm', model, augment_fn=augment_gamma, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES,is_pretrained=True)
-# rgb_model_function( model_basename+'_a_fl', model, augment_fn=augment_flip, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_ns', model, augment_fn=augment_noise, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES,is_pretrained=True)
-# rgb_model_function( model_basename+'_a_rot', model, augment_fn=augment_rotation, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-model_basename='ICSHM_RGB_DEEPLABV3p_np'
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename, model, None, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES,is_pretrained=False)
-# rgb_model_function( model_basename+'_a_all', model, augment_fn=augment_all, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-#
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_br', model, augment_fn=augment_brightness, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-#
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_cn', model, augment_fn=augment_contrast, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-#
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_gm', model, augment_fn=augment_gamma, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES,is_pretrained=False)
-# rgb_model_function( model_basename+'_a_fl', model, augment_fn=augment_flip, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES)
-# rgb_model_function( model_basename+'_a_ns', model, augment_fn=augment_noise, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
-
-# model = DeeplabV3Plus((RES_Y, RES_X, N_CHANNELS), N_CLASSES,is_pretrained=True)
-# rgb_model_function( model_basename+'_a_rot', model, augment_fn=augment_rotation, batch_size=32, epochs=epochs)
-# del model
-# gc.collect()
 
 

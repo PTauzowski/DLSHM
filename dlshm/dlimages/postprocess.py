@@ -1,7 +1,6 @@
 import os
 import cv2 as cv
 import numpy as np
-from dlshm.dlmodels.trainer import apply_crf
 from matplotlib import pyplot as plt
 import tensorflow as tf
 

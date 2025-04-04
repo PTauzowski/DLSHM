@@ -65,31 +65,33 @@ def augment_photo(X, Y):
 
 def augment_brightness(X, Y):
     for i in range(X.shape[0]):
-        X[i,] = tf.image.random_brightness(X[i,], max_delta=0.1).numpy()  # Random brightness
+        if tf.random.uniform([]) > 0.4:
+            X[i,] = tf.image.random_brightness(X[i,], max_delta=0.1).numpy()  # Random brightness
 
     return X, Y
 
 def augment_contrast(X, Y):
     for i in range(X.shape[0]):
-        X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.2).numpy()  # Random contrast
+        if tf.random.uniform([]) > 0.4:
+            X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.2).numpy()  # Random contrast
 
     return X, Y
 
 def augment_noise(X, Y):
     for i in range(X.shape[0]):
-        X# Add Gaussian noise
-        random_stddev = tf.random.uniform([], minval=0.01, maxval=0.05)
-        noise = tf.random.normal(shape=tf.shape(X[i,]), mean=0.0, stddev=random_stddev)
-        X[i,] = tf.clip_by_value(X[i,] + noise, 0.0, 1.0).numpy()  # Ensure values remain in [0,1]
+        if tf.random.uniform([]) > 0.4:
+            random_stddev = tf.random.uniform([], minval=0.01, maxval=0.05)
+            noise = tf.random.normal(shape=tf.shape(X[i,]), mean=0.0, stddev=random_stddev)
+            X[i,] = tf.clip_by_value(X[i,] + noise, 0.0, 1.0).numpy()  # Ensure values remain in [0,1]
 
     return X, Y
 
 
 def augment_gamma(X, Y):
     for i in range(X.shape[0]):
-        # Apply Gamma Correction
-        gamma = tf.random.uniform([], minval=0.7, maxval=1.3)
-        X[i,] = tf.image.adjust_gamma(X[i,], gamma)._numpy()
+        if tf.random.uniform([]) > 0.4:
+            gamma = tf.random.uniform([], minval=0.7, maxval=1.3)
+            X[i,] = tf.image.adjust_gamma(X[i,], gamma)._numpy()
 
     return X, Y
 
@@ -103,21 +105,71 @@ def augment_flip(X, Y):
 
 def augment_rotation(X,Y):
     for i in range(X.shape[0]):
-        random_rotation = RandomRotation(factor=0.05,fill_mode="nearest")
-        combined = tf.concat([X[i,], Y[i,]], axis=-1)  # Assume channels-last format
-        rotated_combined = random_rotation(combined)
+        if tf.random.uniform([]) > 0.6:
+            random_rotation = RandomRotation(factor=0.05,fill_mode="nearest")
+            combined = tf.concat([X[i,], Y[i,]], axis=-1)  # Assume channels-last format
+            rotated_combined = random_rotation(combined)
 
-        rotated_X = rotated_combined[..., :X.shape[-1]]  # Extract image channels
-        rotated_Y = rotated_combined[..., X.shape[-1]:]  # Extract mask channels
-        X[i,] = rotated_X.numpy()
-        Y[i,] = rotated_Y.numpy()
+            rotated_X = rotated_combined[..., :X.shape[-1]]  # Extract image channels
+            rotated_Y = rotated_combined[..., X.shape[-1]:]  # Extract mask channels
+            X[i,] = rotated_X.numpy()
+            Y[i,] = rotated_Y.numpy()
     return X, Y
+
+def augment_cutmix(images, masks, alpha=1.0, p=0.4):
+    """Applies CutMix to a batch of images and masks with a given probability.
+
+    Args:
+        images (numpy.ndarray): Batch of images (batch_size, H, W, C).
+        masks (numpy.ndarray): Corresponding segmentation masks (batch_size, H, W, num_classes).
+        alpha (float): Parameter for the Beta distribution.
+        p (float): Probability of applying CutMix to each sample.
+
+    Returns:
+        mixed_images (numpy.ndarray): Augmented image batch.
+        mixed_masks (numpy.ndarray): Augmented mask batch.
+    """
+    batch_size, h, w, c = images.shape
+    indices = np.random.permutation(batch_size)  # Shuffle indices within the batch
+
+    mixed_images = images.copy()
+    mixed_masks = masks.copy()
+
+    for i in range(batch_size):
+        if np.random.rand() < p:  # Apply CutMix with probability p
+            j = indices[i]  # Select another random image/mask
+
+            # Sample lambda value
+            lambda_val = np.random.beta(alpha, alpha)
+
+            # Compute bounding box dimensions based on lambda
+            cut_w = int(w * np.sqrt(1 - lambda_val))
+            cut_h = int(h * np.sqrt(1 - lambda_val))
+
+            # Randomly generate a bounding box center
+            cut_x = np.random.randint(0, w)
+            cut_y = np.random.randint(0, h)
+
+            # Compute bounding box coordinates
+            bbx1 = np.clip(cut_x - cut_w // 2, 0, w)
+            bby1 = np.clip(cut_y - cut_h // 2, 0, h)
+            bbx2 = np.clip(cut_x + cut_w // 2, 0, w)
+            bby2 = np.clip(cut_y + cut_h // 2, 0, h)
+
+            # Replace region in image
+            mixed_images[i, bby1:bby2, bbx1:bbx2, :] = images[j, bby1:bby2, bbx1:bbx2, :]
+
+            # Replace region in mask
+            mixed_masks[i, bby1:bby2, bbx1:bbx2, :] = masks[j, bby1:bby2, bbx1:bbx2, :]
+
+    return mixed_images, mixed_masks
 
 
 def augment_all(X, Y):
     X, Y = augment_gamma(X,Y)
     X, Y = augment_brightness(X,Y)
     X, Y = augment_contrast(X,Y)
+    X, Y = augment_cutmix(X,Y)
     X, Y = augment_flip(X,Y)
     X, Y = augment_rotation(X, Y)
     return X, Y
@@ -156,45 +208,4 @@ def augment_dl3_dmg(X, Y):
     return X, Y
 
 
-def augment_cutmix(images, masks, alpha=1.0):
-    """Applies CutMix to a batch of images and masks.
 
-    Args:
-        images (numpy.ndarray): Batch of images (batch_size, H, W, C).
-        masks (numpy.ndarray): Corresponding segmentation masks (batch_size, H, W, num_classes).
-        alpha (float): Parameter for the Beta distribution.
-
-    Returns:
-        mixed_images (numpy.ndarray): Augmented image batch.
-        mixed_masks (numpy.ndarray): Augmented mask batch.
-    """
-    batch_size, h, w, c = images.shape
-    indices = np.random.permutation(batch_size)  # Shuffle indices within the batch
-    lambda_val = np.random.beta(alpha, alpha)  # Sample lambda from Beta distribution
-
-    # Randomly generate a bounding box
-    cut_x = np.random.randint(0, w)
-    cut_y = np.random.randint(0, h)
-    cut_w = w // 2  # You can make this random
-    cut_h = h // 2
-
-    # Compute bounding box coordinates
-    bbx1 = np.clip(cut_x - cut_w // 2, 0, w)
-    bby1 = np.clip(cut_y - cut_h // 2, 0, h)
-    bbx2 = np.clip(cut_x + cut_w // 2, 0, w)
-    bby2 = np.clip(cut_y + cut_h // 2, 0, h)
-
-    # Apply CutMix augmentation
-    mixed_images = images.copy()
-    mixed_masks = masks.copy()
-
-    for i in range(batch_size):
-        j = indices[i]  # Select a random image from the same batch
-
-        # Replace patch in image
-        mixed_images[i, bby1:bby2, bbx1:bbx2, :] = images[j, bby1:bby2, bbx1:bbx2, :]
-
-        # Replace patch in mask
-        mixed_masks[i, bby1:bby2, bbx1:bbx2, :] = masks[j, bby1:bby2, bbx1:bbx2, :]
-
-    return mixed_images, mixed_masks
