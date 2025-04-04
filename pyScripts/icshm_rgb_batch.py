@@ -291,13 +291,13 @@ import gc
 epochs=200
 batch_size=32
 
-model_basename='ICSHM_RGB_UNET_rn18'
-create_unet_sm = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
-#multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
+# model_basename='ICSHM_RGB_UNET_rn18'
+# create_unet_sm = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+# #multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
 
-model_basename='ICSHM_RGB_UNET_rn101'
-create_unet_sm = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
-multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
+# model_basename='ICSHM_RGB_UNET_rn101'
+# create_unet_sm = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+# multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
 
 model_basename='ICSHM_RGB_UNET_in3'
 create_unet_sm = lambda: sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
