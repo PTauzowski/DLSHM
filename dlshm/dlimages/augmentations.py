@@ -63,49 +63,49 @@ def augment_photo(X, Y):
     return X, Y
 
 
-def augment_brightness(X, Y):
+def augment_brightness(X, Y, p=0.4): # p = 0.4
     for i in range(X.shape[0]):
-        if tf.random.uniform([]) > 0.4:
-            X[i,] = tf.image.random_brightness(X[i,], max_delta=0.1).numpy()  # Random brightness
+        if tf.random.uniform([]) < p:
+            X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
 
     return X, Y
 
-def augment_contrast(X, Y):
+def augment_contrast(X, Y,p=0.4): # p=0.4
     for i in range(X.shape[0]):
-        if tf.random.uniform([]) > 0.4:
+        if tf.random.uniform([]) < p:
             X[i,] = tf.image.random_contrast(X[i,], lower=0.9, upper=1.2).numpy()  # Random contrast
 
     return X, Y
 
-def augment_noise(X, Y):
+
+def augment_gamma(X, Y, p=0.4): #p=0.4
     for i in range(X.shape[0]):
-        if tf.random.uniform([]) > 0.4:
+        if tf.random.uniform([]) < p:
+            gamma = tf.random.uniform([], minval=0.7, maxval=1.3)
+            X[i,] = tf.image.adjust_gamma(X[i,], gamma)._numpy()
+
+    return X, Y
+
+def augment_noise(X, Y, p = 0.4): #p=0.4
+    for i in range(X.shape[0]):
+        if tf.random.uniform([]) < p:
             random_stddev = tf.random.uniform([], minval=0.01, maxval=0.05)
             noise = tf.random.normal(shape=tf.shape(X[i,]), mean=0.0, stddev=random_stddev)
             X[i,] = tf.clip_by_value(X[i,] + noise, 0.0, 1.0).numpy()  # Ensure values remain in [0,1]
 
     return X, Y
 
-
-def augment_gamma(X, Y):
+def augment_flip(X, Y, p=0.5): # p=0.5
     for i in range(X.shape[0]):
-        if tf.random.uniform([]) > 0.4:
-            gamma = tf.random.uniform([], minval=0.7, maxval=1.3)
-            X[i,] = tf.image.adjust_gamma(X[i,], gamma)._numpy()
-
-    return X, Y
-
-def augment_flip(X, Y):
-    for i in range(X.shape[0]):
-        if tf.random.uniform([]) > 0.5:  # 50% probability
+        if tf.random.uniform([]) < p:  # 50% probability
             X[i,] = tf.image.flip_left_right(X[i,]).numpy()
             Y[i,] = tf.image.flip_left_right(Y[i,]).numpy()
 
     return X, Y
 
-def augment_rotation(X,Y):
+def augment_rotation(X,Y,p=0.6): # p=0.6
     for i in range(X.shape[0]):
-        if tf.random.uniform([]) > 0.6:
+        if tf.random.uniform([]) < p:
             random_rotation = RandomRotation(factor=0.05,fill_mode="nearest")
             combined = tf.concat([X[i,], Y[i,]], axis=-1)  # Assume channels-last format
             rotated_combined = random_rotation(combined)
@@ -116,7 +116,7 @@ def augment_rotation(X,Y):
             Y[i,] = rotated_Y.numpy()
     return X, Y
 
-def augment_cutmix(images, masks, alpha=1.0, p=0.4):
+def augment_cutmix(images, masks, alpha=1.0, p=0.4): # p=0.4
     """Applies CutMix to a batch of images and masks with a given probability.
 
     Args:

@@ -9,6 +9,20 @@ from matplotlib import image as mpimg, pyplot as plt
 from dlshm.dlimages.convert import rgb2labnorm, labnorm2rgb
 
 
+class SegmentationRGBInputFileReader:  # Reading of the SOURCE images.
+    def __init__(self, resX, resY):
+        self.x = np.zeros((resY, resX, 3), dtype=np.float32)
+        self.resX = resX
+        self.resY = resY
+
+    def __call__(self, filename):
+        image = cv.imread(filename)
+        image_array = resize(image, (self.resY, self.resX), anti_aliasing=True)
+        self.x[:, :, 0] = image_array[:, :, 0]
+        self.x[:, :, 1] = image_array[:, :, 1]
+        self.x[:, :, 2] = image_array[:, :, 2]
+        return self.x
+
 class ICSHM_RGB_Converter:
     def __init__(self,resX,resY):
         self.resX=resX
@@ -36,7 +50,7 @@ class ICSHM_RGB_Converter:
 
         return self.x, self.y
 
-class ICSHM_RGB_4_Converter:
+class ICSHM_STRUCT_Converter:
     def __init__(self,resX,resY):
         self.resX=resX
         self.resY=resY

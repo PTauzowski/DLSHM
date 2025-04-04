@@ -38,17 +38,6 @@ import segmentation_models as sm
 #User='Mariusz'
 User='Piotr'
 
-# 'a' - augmented with flip
-# 'a2' - augmented without flip
-# 'o' - no augmentation, without flip, no weights
-# 'ob' - no augmentation, without flip, no weights, saved best of training process
-# 'obw' - no augmentation, without flip, saved best of training process, weighted
-# 'ab' - augmentation, with flip, no weights, saved best of training process
-# 'es' - early stop and LR update
-# 'np' - not pretrained
-# 'x' - Xception in use
-# 'b' Bigger UNet model with N_LAYERS and N_FILTERS
-
 # CURRENT_MODEL_NAME= 'ICSHM_RGB_DEEPLABV3_100'
 # CURRENT_MODEL_NAME = 'ICSHM_RGB_DEEPLABV3p_150a2'
 
@@ -74,7 +63,6 @@ LEARNING_RATE = 0.001
 # model = u_net_compiled(input_size=(RES_Y,RES_X,N_CHANNELS), n_filters=N_FILTERS, n_classes=N_FILTERS)
 
 
-
 def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
     train_gen = None
     validation_gen = None
@@ -96,51 +84,32 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
             TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
         elif User=="Piotr":
-            TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+            TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
             #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
             MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
             #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-            IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
-            #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+            #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+            IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
             #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
             PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
             #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-            TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
+            TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet4'
             TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
         # info_fil
         # e = pd.read_csv(data_info_file, header=None, index_col=None, delimiter=',')
 
-
-        class SegmentationRGBInputFileReader:   # Reading of the SOURCE images.
-            def __init__(self, resX, resY ):
-                self.x = np.zeros((resY, resX, 3), dtype=np.float32)
-                self.resX=resX
-                self.resY=resY
-
-            def __call__(self, filename):
-                image = cv.imread(filename)
-                image_array = resize(image, (self.resY, self.resX), anti_aliasing=True)
-                self.x[:, :, 0] = image_array[:, :, 0]
-                self.x[:, :, 1] = image_array[:, :, 1]
-                self.x[:, :, 2] = image_array[:, :, 2]
-                return self.x
-
-        def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
-            colors = np.array([
-                [0, 0, 0],  # background
-                [1, 0, 0],  # mask 1 (red)
-                [0, 1, 0],  # mask 2 (green)
-                [0, 0, 1]  # mask 3 (blue)
-            ], dtype=np.float32)
-
-            nmasks = y.shape[2]
-            masks = colors[np.argmax(y, axis=-1)]
-
-            alpha = 0.6
-            result= cv.addWeighted(masks, 1-alpha, x, alpha, 0)
-            return result
+        def test_rgb_postprocess(filename, x, y, result):
+            fig, axp = plt.subplots(N_CLASSES, 4)
+            fig.set_size_inches((20, 10))
+            for i in range(0, 8):
+                axp[i, 0].imshow(x[0, :, :, :])
+                axp[i, 1].imshow(y[0, :, :, i])
+                axp[i, 2].imshow(result[0, :, :, i] > 0.5)
+                axp[i, 3].imshow(result[0, :, :, i])
+            plt.savefig(filename)
+            plt.close(fig)
 
         EPOCHS=epochs
         BATCH_SIZE=batch_size
@@ -163,7 +132,7 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
         print("Sum   Weights:", sum(data_manager.weights))
 
         # class weights reflects not only pixel ratio but also class importance
-        #class_weights = np.array([0.05, 0.1, 0.1, 0.1, 0.2, 0.5, 1.0, 0.05])
+        # class_weights = np.array([0.05, 0.1, 0.1, 0.1, 0.2, 0.5, 1.0, 0.05])
 
         class_weights = np.array([0.07, 0.33, 0.35, 0.25])
 
@@ -186,32 +155,32 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
 
         # Generatory danych do trenowania (podstawia dane, jak w tablicy) i walidacji:
         train_gen = DataGeneratorFromNumpyFiles(dataSource.get_train_set_files(),BATCH_SIZE,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES, augmentation_fn=augment_fn)
-        validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
-        test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES)
+        validation_gen = DataGeneratorFromNumpyFiles(dataSource.get_validation_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES,shuffle=False)
+        test_gen = DataGeneratorFromNumpyFiles(dataSource.get_test_set_files(),1,(RES_Y,RES_X),(RES_Y,RES_X),N_CHANNELS,N_CLASSES,shuffle=False)
 
         #gener_test(os.path.join('/home/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
 
         # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
-        trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
-        trainer.plot_training_history()
+        #trainer.train(train_gen, validation_gen, EPOCHS, BATCH_SIZE)
+        #trainer.plot_training_history()
 
         # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
-        print("Evaluate on test data")
-        results = model.evaluate(test_gen, batch_size=1)
-        print("test results:", results)
+        # print("Evaluate on test data")
+        # results = model.evaluate(test_gen, batch_size=1)
+        # print("test results:", results)
 
 
         # Testowanie na danych testowych (nie walidacyjnych)Unet-test
-        trainer.test_model(test_gen,test_dmg_segmentation)
-        dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
+        # trainer.test_model(test_gen,test_dmg_segmentation)
+        # dfs, df = trainer.compute_gen_measures(test_gen,class_weights,CLASS_NAMES)
+        #
+        #
+        # with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
+        #     dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+        #     df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
-
-        with pd.ExcelWriter(TASK_PATH+'/' + CURRENT_MODEL_NAME + '.xlsx', engine='openpyxl') as writer:
-            dfs.to_excel(writer, sheet_name='ICSHM', index=False)
-            df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
-
-        #gener_test(os.path.join( '/Users/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
-        trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+        gener_test(os.path.join( '/Users/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
+        #trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
         del train_gen, validation_gen, test_gen
 
     finally:
@@ -291,17 +260,17 @@ import gc
 epochs=200
 batch_size=32
 
-# model_basename='ICSHM_RGB_UNET_rn18'
-# create_unet_sm = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
-# #multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
+model_basename='ICSHM_RGB_UNET_rn18'
+create_unet_sm = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
 
 # model_basename='ICSHM_RGB_UNET_rn101'
 # create_unet_sm = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
 # multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
-
-model_basename='ICSHM_RGB_UNET_in3'
-create_unet_sm = lambda: sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
-multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
+#
+# model_basename='ICSHM_RGB_UNET_in3'
+# create_unet_sm = lambda: sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+# multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
 
 
 # model_basename='ICSHM_RGB_UNET70'
