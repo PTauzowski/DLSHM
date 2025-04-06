@@ -5,7 +5,7 @@ os.environ["SM_FRAMEWORK"] = "tf.keras"
 #import keras.backend as K
 
 #from dlshm.dlimages import data_processing
-from dlshm.dlimages.data_processing import ICSHM_RGB_Converter,ICSHM_RGB_4_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter, compute_class_weights
+from dlshm.dlimages.data_processing import ICSHM_RGB_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter, compute_class_weights
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
 from dlshm.dlmodels.c_unet import custom_unet
 
@@ -23,7 +23,7 @@ import pandas as pd
 
 import matplotlib as mpl
 
-from dlshm.dlimages.postprocess import write_prediction_segmentated, write_prediction_segmentated2, write_smooth_masks,write_smooth_masks_refined, test_dmg_segmentation
+from dlshm.dlimages.postprocess import write_prediction_segmentated, write_prediction_segmentated2, test_dmg_segmentation
 
 import sys
 

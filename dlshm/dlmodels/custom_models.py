@@ -1,10 +1,10 @@
 import tensorflow as tf
-from tensorflow.keras import Input, applications, initializers, layers, Model
-from tensorflow.keras.layers import AveragePooling2D, Conv2D, BatchNormalization, UpSampling2D, Concatenate,Conv2DTranspose
+from keras import Input, applications, initializers, layers, Model
+from keras.layers import AveragePooling2D, Conv2D, BatchNormalization, UpSampling2D, Concatenate,Conv2DTranspose
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
+from keras import layers
 
 
 def conv_bn_relu(filters, kernel_size, strides=1, dilation_rate=1):

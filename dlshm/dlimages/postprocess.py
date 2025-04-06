@@ -100,7 +100,7 @@ def write_smooth_masks(pathname, x, y):
     plt.savefig(test_name)  # Save as PNG file
     plt.close()
 
-  def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
+def predictDMGsegmentation(x, y):  # wizualizacja masek z sieci
     colors = np.array([
         [0, 0, 0],  # background
         [1, 0, 0],  # mask 1 (red)

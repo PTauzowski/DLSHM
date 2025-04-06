@@ -4,14 +4,13 @@ import time
 import cv2 as cv
 import numpy as np
 import pandas as pd
-import pydensecrf.densecrf as dcrf
 import tensorflow as tf
 
 from tensorflow import keras
 from flatbuffers.packer import float32
 from matplotlib import pyplot as plt
-from tensorflow.keras.metrics import Accuracy, CategoricalAccuracy
-from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
+from keras.metrics import Accuracy, CategoricalAccuracy
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
 # import datetime as dt
 
@@ -26,33 +25,32 @@ def psnr(super_resolution, high_resolution):
 
 
 class DLTrainer:
-    def __init__(self, model_name, model, task_path ):
+    def __init__(self, task_path, model_name, model ):
         self.task_path=task_path
         self.model_name=model_name
+        self.model_path=os.path.join(task_path, model_name)
+        self.models_path = self.create_model_dir('Models')
+        self.tests_path = self.create_model_dir('TestResults')
+        self.predictions_path = self.create_model_dir('Predictions')
+        self.mosaic_predictions_path = self.create_model_dir('MosaicPredictions')
+        self.model_pathname = os.path.join(self.models_path, self.model_name + '.keras')
         if model==None:
-            model_path = os.path.join(self.task_path, 'Models')
-            if os.path.exists(model_path):
-                model = tf.keras.models.load_model(os.path.join(model_path, self.model_name+'.keras'),compile=False)
+            if os.path.exists(self.model_pathname):
+                model = tf.keras.models.load_model(self.model_pathname,compile=False)
                 print('Model ',model_name,'was found and loaded')
             else:
                 print('Model ', model_name, 'was NOT found')
         self.model=model
-        self.model_path = os.path.join(self.task_path, 'Models')
-        isExist = os.path.exists(self.model_path)
-        if not isExist:
-            os.makedirs(self.model_path)
-        self.model_filename=os.path.join(self.model_path, self.model_name)+'.keras'
 
-    def save_model(self):
-        model_path = os.path.join(self.task_path, 'Models')
-        isExist = os.path.exists(model_path)
-        if not isExist:
-            os.makedirs(model_path)
-        self.model.save(os.path.join(model_path, self.model_name)+'.keras')
+    def create_model_dir(self,dir_name):
+        path = os.path.join(self.model_path, dir_name)
+        if not os.path.exists(path):
+            os.makedirs(path)
+        return path
 
     def train(self, train_gen, validation_gen, epochs, batch_size ):
         checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-            self.model_filename,  # Filepath to save the model
+            self.model_pathname,  # Filepath to save the model
             monitor="val_loss",  # Metric to track (e.g., "val_accuracy" for classification)
             save_best_only=True,  # Save only when val_loss improves
             mode="min",  # "min" because lower loss is better
@@ -67,37 +65,30 @@ class DLTrainer:
 
         training_time_start = time.process_time()
         self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=callbacks)
-        self.save_model()
+        self.model.save(self.model_pathname)
+        self.plot_training_history()
         self.training_time=time.process_time() - training_time_start
 
-    def test_model(self, test_gen, postprocess, extension='png'):
-        test_path = os.path.join(self.task_path, 'TestResults')
-        test_path = os.path.join(test_path, self.model_name)
-        if not os.path.exists(test_path):
-            os.makedirs(test_path)
+    def test_model(self,test_gen, postprocess, extension='png'):
         N=len(test_gen)
         print('Testing model:',self.model_name)
         for i, (x, y) in enumerate(test_gen):
             data_y = self.model.predict(x,verbose=0)
-            postprocess(os.path.join(test_path, 'test_file_'+str(i))+'.'+extension,x,y,data_y)
+            postprocess(os.path.join(self.tests_path, 'test_file_'+str(i))+'.'+extension,x,y,data_y)
             if i % 100 == 0:
                 print('iter=', i, '/', N, flush=True)
             if i + 1 >= N:  # Stop after all batches
                 break
 
     def test_model_on_images(self, test_gen, postprocess, extension='png'):
-        test_path=os.path.join(self.task_path, 'TestResults')
-        test_path = os.path.join(test_path, self.model_name)
-        if not os.path.exists(test_path):
-            os.makedirs(test_path)
         index=1
         N=len(test_gen)
         print('Testing model:',self.model_name)
         for i, (x, y) in enumerate(test_gen):
             data_y = self.model.predict(x)
-            cv.imwrite(os.path.join(test_path, 'test_file_T_' + str(index))+'.'+extension, postprocess(x[0,],data_y[0,])*255)
-            cv.imwrite(os.path.join(test_path, 'test_file_Y_' + str(index)) + '.' + extension, y[0,]*255)
-            cv.imwrite(os.path.join(test_path, 'test_file_X_' + str(index)) + '.' + extension, x[0,]*255)
+            cv.imwrite(os.path.join(self.tests_path, 'test_file_T_' + str(index))+'.'+extension, postprocess(x[0,],data_y[0,])*255)
+            cv.imwrite(os.path.join(self.tests_path, 'test_file_Y_' + str(index)) + '.' + extension, y[0,]*255)
+            cv.imwrite(os.path.join(self.tests_path, 'test_file_X_' + str(index)) + '.' + extension, x[0,]*255)
             index=index+1
             if index % 100 == 0:
                 print('iter=', index, '/', N, flush=True)
@@ -106,16 +97,12 @@ class DLTrainer:
 
 
     def test_model_weighted(self, test_gen, postprocess, extension='png'):
-        test_path=os.path.join(self.task_path, 'TestResults')
-        test_path = os.path.join(test_path, self.model_name)
-        if not os.path.exists(test_path):
-            os.makedirs(test_path)
         index=1
         N=len(test_gen)
         print('Testing model:',self.model_name)
         for x,y,weights in test_gen:
             data_y = self.model.predict(x)
-            postprocess(os.path.join(test_path, 'test_file_'+str(index))+'.'+extension,x,y,data_y)
+            postprocess(os.path.join(self.tests_path, 'test_file_'+str(index))+'.'+extension,x,y,data_y)
             index=index+1
             if index % 100 == 0:
                 print('iter=', index, '/', N, flush=True)
@@ -123,12 +110,6 @@ class DLTrainer:
                 break
 
     def predict(self,img_source, postprocess):
-        predictions_dir=os.path.join(self.task_path, 'Predictions')
-        if not os.path.exists(predictions_dir):
-            os.makedirs(predictions_dir)
-        prediction_path = os.path.join(predictions_dir, self.model_name)
-        if not os.path.exists(prediction_path):
-            os.makedirs(prediction_path)
         index=1
         print('Predicting images from dir:', img_source)
         N = len(os.listdir(img_source))
@@ -137,7 +118,7 @@ class DLTrainer:
                 #data_x = inputImgReader(os.path.join(img_source, filename))
                 data_x = cv.imread(os.path.join(img_source, filename)).astype('float32') / 255.0
                 data_y = self.model.predict(np.expand_dims(data_x,0))
-                postprocess(os.path.join(prediction_path, filename), data_x, data_y[0,])
+                postprocess(os.path.join(self.prediction_path, filename), data_x, data_y[0,])
                 # cv.imwrite(os.path.join(prediction_path, filename) + '_X.png',data_x*255 )
                 # cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', postprocess(data_x, data_y[0,]) * 255)
             except Exception as e:
@@ -147,12 +128,6 @@ class DLTrainer:
                 print('iter=', index, '/', N, flush=True)
 
     def mosaic_predict(self, img_source_dir, idim, odim):
-        predictions_dir = os.path.join(self.task_path, 'mosaicPredictions')
-        if not os.path.exists(predictions_dir):
-            os.makedirs(predictions_dir)
-        prediction_path = os.path.join(predictions_dir, self.model_name)
-        if not os.path.exists(prediction_path):
-            os.makedirs(prediction_path)
         index = 1
         print('Predicting images from dir:', img_source_dir)
         N = len(os.listdir(img_source_dir))
@@ -170,8 +145,8 @@ class DLTrainer:
                     data_y = self.model.predict(data_x)
                     image_y[l*odim[1]:(l+1)*odim[1], k*odim[0]:(k+1)*odim[0], :] = data_y[0,]
             try:
-                cv.imwrite(os.path.join(prediction_path, filename) + '_X.png', image)
-                cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', image_y * 255)
+                cv.imwrite(os.path.join(self.mosaic_predictions_path, filename) + '_X.png', image)
+                cv.imwrite(os.path.join(self.mosaic_predictions_path, filename) + '_PRED.png', image_y * 255)
             except Exception as e:
                 print('Cant export ' + filename + ' because', e)
             index = index + 1
@@ -188,8 +163,7 @@ class DLTrainer:
         plt.xlabel('Epoch')
         plt.ylabel('Loss Value')
         plt.legend()
-        model_path = os.path.join(self.task_path, 'Models')
-        plt.savefig(os.path.join(model_path, self.model_name)+'_training.png')
+        plt.savefig(os.path.join(self.models_path, self.model_name)+'_training.png')
 
     def plot_training_accuracy(self):
         fig, axis = plt.subplots(1, 2, figsize=(20, 5))

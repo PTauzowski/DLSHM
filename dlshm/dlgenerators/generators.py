@@ -43,13 +43,12 @@ def sequenced_gener_test(pathName, data_generator, scope=-1):
 
 class DataSource:
     pass
-    def __init__(self, sourceDir, train_ratio=0.8, validation_ratio=0.15, sampleSize=-1, shuffle=True, cross_validation_folds=1):
+    def __init__(self, sourceDir, train_ratio=0.7, validation_ratio=0.15, sampleSize=-1, shuffle=True):
         self.sourceDir=sourceDir
         self.trainRatio=train_ratio
         self.validation_ratio=validation_ratio
         self.shuffle=shuffle
         self.sampleSize=sampleSize
-        self.CROSS_VALIDATION_FOLDS=cross_validation_folds
 
         if self.sourceDir == "":
             print("Source path can't be empty")
@@ -75,41 +74,31 @@ class DataSource:
         self.train_samples_size = int(round(self.used_sample_size * self.trainRatio))
         self.validation_samples_size = int(round(self.used_sample_size * self.validation_ratio))
         self.test_samples_size = self.used_sample_size - self.train_samples_size - self.validation_samples_size
-
         self.nfolds = int( (len(self.files) - self.test_samples_size)  / self.validation_samples_size + 0.01)
 
-        train_zone = self.files[:self.train_samples_size+self.validation_samples_size]
-        self.train_zone_parts = np.array_split(train_zone, self.nfolds)
-
-        self.train_files = self.files[:self.train_samples_size]
-        self.validation_files = self.files[self.train_samples_size:self.train_samples_size+self.validation_samples_size]
+        self.train_zone_files = self.files[:self.train_samples_size+self.validation_samples_size]
         self.test_files = self.files[self.train_samples_size+self.validation_samples_size:self.used_sample_size]
 
-    def get_training_fold(self,ith):
-            train_files=[]
-            validation_files=[]
-            for k in range(self.nfolds):
-                if k != ith:
-                    train_files = train_files + self.train_zone_parts[k]
-                else:
-                    valdation_files = self.train_zone_parts[k]
-            return train_files, validation_files
 
 
-    def get_train_set_files(self):
-            return self.files[:self.train_samples_size]
+    def get_training_data(self,nfold=0):
+        folds = np.array_split(self.files, self.nfolds)
+        return folds[nfold], list(self.train_zone_files) - set(folds[nfold])
 
-    def get_validation_set_files(self):
-        return self.files[self.train_samples_size:self.train_samples_size+self.validation_samples_size]
+    # def get_train_set_files(self):
+    #         return self.files[:self.train_samples_size]
+    #
+    # def get_validation_set_files(self):
+    #     return self.files[self.train_samples_size:self.train_samples_size+self.validation_samples_size]
 
-    def get_test_set_files(self):
+    def get_test_files(self):
         return self.files[self.train_samples_size+self.validation_samples_size:self.used_sample_size]
 
-    def get_dims(self):
-        with open(self.files[0], 'rb') as f:
-            x = np.load(f)
-            y = np.load(f)
-            return x.shape, y.shape
+    # def get_dims(self):
+    #     with open(self.files[0], 'rb') as f:
+    #         x = np.load(f)
+    #         y = np.load(f)
+    #         return x.shape, y.shape
 
     def print_info(self):
         print('Data path :',self.sourceDir)
