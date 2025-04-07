@@ -31,17 +31,17 @@ class ICSHM_Task:
         self.augmentation_fn = augmentation_fn
 
     def create_dataset(self,train_dir,converter):
-        self.data_manager = ICSHMDataManager(self.SOURCE_PATH)
+        self.data_manager = ICSHMDataManager(self.SOURCE_PATH,csv_ind=self.csv_ind)
         self.TRAIN_PATH = os.path.join(self.TASK_PATH, train_dir)
         self.data_manager.convert_data_to_numpy_format(converter, self.TRAIN_PATH)
 
     def train(self):
-        self.dataSource = DataSource(self.TRAIN_PATH )
+        self.dataSource = DataSource(self.TRAIN_PATH, train_ratio=0.75, validation_ratio=0.15 )
         self.trainer = DLTrainer(self.TASK_PATH, self.TASK_NAME, self.model)
         train_set, validation_set = self.dataSource.get_training_data()
         train_gen = DataGeneratorFromNumpyFiles(train_set, self.BATCH_SIZE, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES, augmentation_fn=self.augmentation_fn)
         validation_gen = DataGeneratorFromNumpyFiles(validation_set, 1, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
-        test_gen = DataGeneratorFromNumpyFiles(self.dataSource.get_test_set_files(), 1, (self.RES_Y, self.RES_X), (self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
+        test_gen = DataGeneratorFromNumpyFiles(self.dataSource.get_test_files(), 1, (self.RES_Y, self.RES_X), (self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
         model = self.trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
         # Kompilacja modelu i wyswitlenie informacji:
@@ -74,6 +74,7 @@ class ICSHM_structural_task(ICSHM_Task):
     def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, BATCH_SIZE=32 , augmentation_fn=None):
         super().__init__(model=model,TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, N_CLASSES=4,BATCH_SIZE=BATCH_SIZE,augmentation_fn=augmentation_fn)
         self.class_weights = np.array([0.07, 0.33, 0.35, 0.25])
+        self.csv_ind=5;
         self.class_names = [ "Nonstructural", "Slab", "Beam", "Column" ]
         self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
         self.create_dataset(os.path.join('TrainSets','Struct'),ICSHM_STRUCT_Converter(self.RES_X, self.RES_Y))
@@ -83,9 +84,10 @@ class ICSHM_damage_task(ICSHM_Task):
     def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, BATCH_SIZE=32, augmentation_fn=None):
         super().__init__(model=model,TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, N_CLASSES=3,BATCH_SIZE=BATCH_SIZE, augmentation_fn=augmentation_fn)
         self.class_weights = np.array([ 0.00174144, 0.09980335, 0.8984552 ])
+        self.csv_ind = 6;
         self.class_names = [ "Background", "Cracks", "Reinforcement" ]
         self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
-        self.create_dataset(os.path.join('TrainSets','Struct'),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
+        self.create_dataset(os.path.join('TrainSets','Dmg'),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
 
 
 

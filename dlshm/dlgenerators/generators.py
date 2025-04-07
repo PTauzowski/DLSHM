@@ -82,8 +82,9 @@ class DataSource:
 
 
     def get_training_data(self,nfold=0):
-        folds = np.array_split(self.files, self.nfolds)
-        return folds[nfold], list(self.train_zone_files) - set(folds[nfold])
+        folds = np.array_split(self.train_zone_files, self.nfolds)
+        train_set = [item for item in self.train_zone_files if item not in folds[nfold]]
+        return train_set, folds[nfold]
 
     # def get_train_set_files(self):
     #         return self.files[:self.train_samples_size]
