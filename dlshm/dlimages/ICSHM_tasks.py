@@ -61,7 +61,7 @@ class ICSHM_Task:
 
         # Testowanie na danych testowych (nie walidacyjnych)Unet-test
         self.trainer.test_model(test_gen,test_dmg_segmentation)
-        dfs, df = self.trainer.compute_gen_measures(test_gen,self.class_weights,self.CLASS_NAMES)
+        dfs, df = self.trainer.compute_gen_measures(test_gen,self.class_weights, self.class_names)
         excel_path = self.trainer.create_model_dir('ExcelResults')
         with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
              dfs.to_excel(writer, sheet_name='ICSHM', index=False)
