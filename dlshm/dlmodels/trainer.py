@@ -109,7 +109,7 @@ class DLTrainer:
             if index + 1 >= N:  # Stop after all batches
                 break
 
-    def predict(self,img_source, postprocess):
+    def predict(self, img_source, postprocess):
         index=1
         print('Predicting images from dir:', img_source)
         N = len(os.listdir(img_source))
@@ -118,7 +118,7 @@ class DLTrainer:
                 #data_x = inputImgReader(os.path.join(img_source, filename))
                 data_x = cv.imread(os.path.join(img_source, filename)).astype('float32') / 255.0
                 data_y = self.model.predict(np.expand_dims(data_x,0))
-                postprocess(os.path.join(self.prediction_path, filename), data_x, data_y[0,])
+                postprocess(os.path.join(self.predictions_path, filename), data_x, data_y[0,])
                 # cv.imwrite(os.path.join(prediction_path, filename) + '_X.png',data_x*255 )
                 # cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', postprocess(data_x, data_y[0,]) * 255)
             except Exception as e:

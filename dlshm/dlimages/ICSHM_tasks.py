@@ -1,4 +1,5 @@
 import os
+import gc
 import numpy as np
 import tensorflow as tf
 import pandas as pd
@@ -14,7 +15,7 @@ from dlshm.dlmodels.trainer import DLTrainer
 
 
 class ICSHM_Task:
-    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, N_CHANNELS=3, N_CLASSES=4, N_LAYERS=6, N_FILTERS=24, BATCH_SIZE=32, EPOCHS=200, LEARNING_RATE = 0.001, augmentation_fn=None):
+    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, N_CHANNELS=3, N_CLASSES=4, N_LAYERS=6, N_FILTERS=24, BATCH_SIZE=32, EPOCHS=5, LEARNING_RATE = 0.001, augmentation_fn=None):
         self.model=model
         self.RES_X = RES_X
         self.RES_Y = RES_Y
@@ -63,10 +64,10 @@ class ICSHM_Task:
         self.trainer.test_model(test_gen,test_dmg_segmentation)
         dfs, df = self.trainer.compute_gen_measures(test_gen,self.class_weights, self.class_names)
         excel_path = self.trainer.create_model_dir('ExcelResults')
-        with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+        with pd.ExcelWriter(os.path.join(excel_path,self.TASK_NAME+'_metrics.xlsx'), engine='openpyxl') as writer:
              dfs.to_excel(writer, sheet_name='ICSHM', index=False)
              df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
-        trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+        self.trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
 
 
 

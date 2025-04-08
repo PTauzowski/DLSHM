@@ -32,7 +32,7 @@ BATCH_SIZE=16
 TASK_PATH = '/home/piotrek/Computations/Ai/ICSHM'
 SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
 
-TASK_NAME='ICSHM_STRUCT_UNET-_rn18'
+TASK_NAME='ICSHM_STRUCT_UNET_rn18'
 create_unet_fn = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
 #create_unet_fn = lambda: custom_unet(input_shape=(RES_Y,RES_X,3), num_layers=6, filters=24, num_classes=4, output_activation="softmax")
 create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
