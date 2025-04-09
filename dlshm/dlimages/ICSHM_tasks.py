@@ -15,7 +15,7 @@ from dlshm.dlmodels.trainer import DLTrainer
 
 
 class ICSHM_Task:
-    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, N_CHANNELS=3, N_CLASSES=4, N_LAYERS=6, N_FILTERS=24, BATCH_SIZE=32, EPOCHS=5, LEARNING_RATE = 0.001, augmentation_fn=None):
+    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, N_CHANNELS=3, N_CLASSES=4, N_LAYERS=6, N_FILTERS=24, BATCH_SIZE=32, EPOCHS=200, LEARNING_RATE = 0.001, augmentation_fn=None):
         self.model=model
         self.RES_X = RES_X
         self.RES_Y = RES_Y
