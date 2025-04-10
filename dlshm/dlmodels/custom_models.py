@@ -198,7 +198,7 @@ def DeeplabV3Plus(image_size, num_classes, output_activation='softmax',is_pretra
     if is_pretrained:
         weights="imagenet"
 
-    resnet50 = applications.ResNet50(
+    resnet50 = applications.ResNet50V2(
         weights=weights, include_top=False, input_tensor=model_input
     )
 
