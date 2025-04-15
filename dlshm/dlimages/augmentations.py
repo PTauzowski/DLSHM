@@ -4,6 +4,10 @@ import numpy as np
 from keras.layers import RandomRotation
 #import tensorflow_addons as tfa
 
+class Augmentation:
+    def __init__(self,name, postfix):
+        self.nam=name
+        self.postfix = postfix
 
 def augment_random_image_transformation(X, Y):
 
@@ -63,12 +67,17 @@ def augment_photo(X, Y):
     return X, Y
 
 
-def augment_brightness(X, Y, p=0.4): # p = 0.4
-    for i in range(X.shape[0]):
-        if tf.random.uniform([]) < p:
-            X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
+class augment_brightness(Augmentation):
 
-    return X, Y
+    def __init__(self):
+        super().__init__('brightness','_br')
+
+    def __call__(self,X, Y, p=0.4):# p = 0.4
+        for i in range(X.shape[0]):
+            if tf.random.uniform([]) < p:
+                X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
+
+        return X, Y
 
 def augment_contrast(X, Y,p=0.4): # p=0.4
     for i in range(X.shape[0]):
