@@ -91,15 +91,10 @@ class ICSHM_damage_task(ICSHM_Task):
         self.create_dataset(os.path.join('TrainSets','Dmg'),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
 
 
-augmentations =  (  ("none", "_none", None),
-                    ("brightness", "_br", augment_brightness),
-                    ("contrast", "_cn", augment_contrast),
-                    ("gamma", "_gm", augment_gamma),)
-
 def multi_augmentation_training_structural(model_basename, create_model_fn, task_fn, BATCH_SIZE, augmentations  ):
     tf.keras.backend.clear_session()
     print("* MULTI augmented training for model :",model_basename )
-    for augmentation in augmentations
+    for augmentation in augmentations:
         model = create_model_fn()
         task = task_fn( model_basename + augmentation.postfix, model, augmentation, BATCH_SIZE)
         task.train()

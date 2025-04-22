@@ -5,8 +5,8 @@ from keras.layers import RandomRotation
 #import tensorflow_addons as tfa
 
 class Augmentation:
-    def __init__(self,name, postfix):
-        self.nam=name
+    def __init__(self, name, postfix):
+        self.name=name
         self.postfix = postfix
 
 def augment_random_image_transformation(X, Y):
