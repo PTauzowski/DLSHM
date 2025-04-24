@@ -46,7 +46,7 @@ augmentations =  (  ("none", "_none", None),
                     ("rotation", "_rot", augment_flip),
                     ("cutmix", "_cut", augment_flip))
 
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101_lr45', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101_lr45', augmentations,nrows=5)
 
 
 # TASK_NAME='ICSHM_STRUCT_UNET_rn18'
