@@ -7,14 +7,17 @@ from pandas import ExcelWriter
 
 
 def prepare_excel_multiaugmented_results(TASK_PATH,MODEL_NAME,augmentations,nrows):
-    sheetname=os.path.join(TASK_PATH,MODEL_NAME)
-    excel_pathname = sheetname+'_results.xlsx'
-    target_pathname = sheetname + '_target.xlsx'
-    writer = ExcelWriter(excel_pathname, engine='openpyxl')
+    excel_pathname=os.path.join(TASK_PATH, 'ICSHM_results.xlsx')
+    if os.path.exists(excel_pathname):
+        # Load existing workbook
+        writer = pd.ExcelWriter(excel_pathname, engine='openpyxl', mode='a', if_sheet_exists='overlay')
+    else:
+        # Create new Excel file
+        writer = pd.ExcelWriter(excel_pathname, engine='openpyxl')
+
     start_row=1
     start_col=0
     for name, postfix, fn in augmentations:
-
         dircontent=os.path.join(TASK_PATH,MODEL_NAME+postfix)
         excel_results = glob.glob(dircontent + '/ExcelResults/*')
         result=excel_results[0]
@@ -22,7 +25,7 @@ def prepare_excel_multiaugmented_results(TASK_PATH,MODEL_NAME,augmentations,nrow
         df.iat[0, 0] = name
         #writer cell(row=start_row, column=0).value = name
         df.to_excel(writer, index=False, header=True if start_row == 0 else False,
-                    startrow=start_row+1, startcol=start_col, sheet_name='Results' )
+                    startrow=start_row+1, startcol=start_col, sheet_name=MODEL_NAME )
 
         if start_col == 0:
             start_col = 10
@@ -35,29 +38,29 @@ def prepare_excel_multiaugmented_results(TASK_PATH,MODEL_NAME,augmentations,nrow
     tbr=6
     tbc=20
 
-    start_row = 1
-    start_col = 0
+    source_row = 6
+    source_col = 'H'
     tbi=0
 
     wb = load_workbook(excel_pathname)
-    ws = wb.worksheets[0]
+    ws = wb[MODEL_NAME]
+    #ws.cell(row=1, column=1).value = MODEL_NAME
 
-    for row in range(6, 6 + nrows - 2):
+    for row in range(tbr, tbr + nrows - 2):
         ws.cell(row=row, column=tbc).value = f'=A{row}'
     for idx, aug in enumerate(augmentations):
-        ws.cell(row=5, column=20+idx+1).value=aug[0]
-        for row in range(6, 6+nrows-2):
-            ws.cell(row=row, column=tbc+1+tbi).value = f'=H{row}*100'
-            #ws[f'U{row}'] = f'=H{row}*100'
+        ws.cell(row=tbr-1, column=20+idx+1).value=aug[0]
+        for row in range(tbr, tbr+nrows-2):
+            ws.cell(row=row, column=tbc+1+tbi).value = '='+source_col+f'{source_row+row-tbr}*100'
         tbi+=1
-        if start_col == 0:
-            start_col = 10
+        if source_col == 'H':
+            source_col = 'R'
         else:
-            start_col = 0
-            start_row += nrows + 2
+            source_col = 'H'
+            source_row += nrows + 2
 
 
 
     # Save changes
-    wb.save(target_pathname)
+    wb.save(excel_pathname)
 

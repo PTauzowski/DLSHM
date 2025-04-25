@@ -2,7 +2,7 @@ import glob
 import os
 
 from dlshm.dlimages.augmentations import augment_brightness, augment_flip, augment_contrast, augment_gamma, \
-    augment_noise
+    augment_noise, augment_all
 from dlshm.dlmodels.custom_models import DeeplabV3Plus
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -44,12 +44,25 @@ augmentations =  (  ("none", "_none", None),
                     ("noise", "_ns", augment_noise),
                     ("flip", "_fl", augment_flip),
                     ("rotation", "_rot", augment_flip),
-                    ("cutmix", "_cut", augment_flip))
+                    ("cutmix", "_cut", augment_flip),
+                    ("all", "_all", augment_all))
 
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101_lr45', augmentations,nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_CUSTOM_UNET', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_LR45', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_np', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_inceptionv3', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101_lr45', augmentations, nrows=5)
+
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_CUSTOM_UNET', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_DEEPLABV3p_np', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_inceptionv3', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101_lr45', augmentations,nrows=4)
 
 
 # TASK_NAME='ICSHM_STRUCT_UNET_rn18'
+
 # create_unet_fn = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations  )
