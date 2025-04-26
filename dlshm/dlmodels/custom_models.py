@@ -165,9 +165,9 @@ def DilatedSpatialPyramidPooling(dspp_input):
     out_6 = convolution_block(dspp_input, kernel_size=3, dilation_rate=6)
     out_12 = convolution_block(dspp_input, kernel_size=3, dilation_rate=12)
     out_18 = convolution_block(dspp_input, kernel_size=3, dilation_rate=18)
-    out_24 = convolution_block(dspp_input, kernel_size=3, dilation_rate=24)
+ #   out_24 = convolution_block(dspp_input, kernel_size=3, dilation_rate=24)
 
-    x = layers.Concatenate(axis=-1)([out_pool, out_1, out_6, out_12, out_18, out_24])
+    x = layers.Concatenate(axis=-1)([out_pool, out_1, out_6, out_12, out_18])
     output = convolution_block(x, kernel_size=1)
     return output
 
@@ -198,7 +198,7 @@ def DeeplabV3Plus(image_size, num_classes, output_activation='softmax',is_pretra
     if is_pretrained:
         weights="imagenet"
 
-    resnet50 = applications.ResNet50V2(
+    resnet50 = applications.ResNet101V2(
         weights=weights, include_top=False, input_tensor=model_input
     )
 
@@ -207,7 +207,7 @@ def DeeplabV3Plus(image_size, num_classes, output_activation='softmax',is_pretra
     x = resnet50.get_layer("conv4_block6_2_relu").output
     x = DilatedSpatialPyramidPooling(x)
 
-    input_a=Conv2DTranspose(48, (2, 2), strides=(4, 4), padding="same")(x)
+    input_a=Conv2DTranspose(48, (2, 2), strides=(2, 2), padding="same")(x)
 
     input_b = resnet50.get_layer("conv2_block3_2_relu").output
     input_b = convolution_block(input_b, num_filters=48, kernel_size=1)
@@ -215,10 +215,71 @@ def DeeplabV3Plus(image_size, num_classes, output_activation='softmax',is_pretra
     x = Concatenate(axis=-1)([input_a, input_b])
     x = convolution_block(x)
     x = convolution_block(x)
-    x = Conv2DTranspose(512, (2, 2), strides=(2, 2), padding="same")(x)
-    x = convolution_block(x)
+    x = Conv2DTranspose(256, (2, 2), strides=(4, 4), padding="same")(x)
+    x = convolution_block(x, num_filters=128)
     x = Conv2DTranspose(64, (2, 2), strides=(2, 2), padding="same")(x)
+    x = convolution_block(x, num_filters=64)
     model_output = Conv2D(num_classes, kernel_size=(1, 1), activation=output_activation, padding="same")(x)
+    return Model(inputs=model_input, outputs=model_output)
+
+def DeeplabV3PlusNew(image_size, num_classes):
+    model_input = keras.Input(shape=(image_size[0], image_size[1], image_size[2]))
+    preprocessed = keras.applications.resnet50.preprocess_input(model_input)
+    resnet50 = keras.applications.ResNet50(
+        weights="imagenet", include_top=False, input_tensor=preprocessed
+    )
+    x = resnet50.get_layer("conv4_block6_2_relu").output
+    x = DilatedSpatialPyramidPooling(x)
+
+    input_a = Conv2DTranspose(48, (2, 2), strides=(4, 4), padding="same")(x)
+
+    input_b = resnet50.get_layer("conv2_block3_2_relu").output
+    input_b = convolution_block(input_b, num_filters=48, kernel_size=1)
+
+    x = layers.Concatenate(axis=-1)([input_a, input_b])
+    x = convolution_block(x)
+    x = convolution_block(x)
+    x = Conv2DTranspose(48, (2, 2), strides=(2, 2), padding="same")(x)
+    model_output = layers.Conv2D(num_classes, kernel_size=(1, 1), padding="same")(x)
+    return keras.Model(inputs=model_input, outputs=model_output)
+
+
+def DeeplabV3PlusChat(image_size, num_classes, output_activation='softmax', is_pretrained=True):
+    model_input = Input(shape=(image_size[0], image_size[1], image_size[2]))
+
+    weights = "imagenet" if is_pretrained else None
+
+    # Encoder
+    resnet50 = applications.ResNet101V2(weights=weights, include_top=False, input_tensor=model_input)
+
+    # Extract features
+    high_level_feature = resnet50.get_layer("conv4_block6_2_relu").output  # 1/16 resolution
+    low_level_feature = resnet50.get_layer("conv2_block3_2_relu").output   # 1/4 resolution
+
+    # ASPP
+    x = DilatedSpatialPyramidPooling(high_level_feature)  # Output: (H/16, W/16, 256)
+
+    # Upsample to 1/4 resolution to match low-level features
+    x = Conv2DTranspose(48, (4, 4), strides=(4, 4), padding="same")(x)  # Output: (H/4, W/4, 48)
+
+    # Project low-level features
+    low_level_feature = convolution_block(low_level_feature, num_filters=48, kernel_size=1)
+    # Upsample to 1/4 resolution to match low-level features
+    low_level_feature = Conv2DTranspose(48, (4, 4), strides=(2, 2), padding="same")(low_level_feature)
+
+    # Concatenate both
+    x = Concatenate(axis=-1)([x, low_level_feature])  # Output: (H/4, W/4, 96)
+
+    # Decoder convolutions
+    x = convolution_block(x, num_filters=256)
+    x = convolution_block(x, num_filters=256)
+
+    # Final upsampling to original resolution
+    x = Conv2DTranspose(256, (4, 4), strides=(4, 4), padding="same")(x)
+    x = convolution_block(x, num_filters=128)
+    # Output layer
+    model_output = Conv2D(num_classes, kernel_size=(1, 1), activation=output_activation, padding="same")(x)
+
     return Model(inputs=model_input, outputs=model_output)
 
 def DeeplabV3PlusD4(image_size, num_classes, output_activation='softmax',is_pretrained=True):
