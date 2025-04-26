@@ -59,8 +59,6 @@ def prepare_excel_multiaugmented_results(TASK_PATH,MODEL_NAME,augmentations,nrow
             source_col = 'H'
             source_row += nrows + 2
 
-
-
     # Save changes
     wb.save(excel_pathname)
 
