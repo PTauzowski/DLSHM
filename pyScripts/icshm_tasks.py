@@ -1,13 +1,15 @@
-
+import glob
 import os
 
-from dlshm.dlmodels.custom_models import DeeplabV3Plus, DeeplabV3PlusChat, DeeplabV3PlusNew
+from dlshm.dlimages.augmentations import augment_brightness, augment_flip, augment_contrast, augment_gamma, \
+    augment_noise, augment_all
+from dlshm.dlmodels.custom_models import DeeplabV3Plus
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 
 
-import gc
+import tensorflow as tf
 
 import tensorflow as tf
 print(tf.__version__)
@@ -17,6 +19,7 @@ from tensorflow.keras import layers, models
 
 from dlshm.dlimages.data_processing import ICSHM_DMG_Converter
 from dlshm.dlmodels.c_unet import custom_unet
+from dlshm.dlresults.postprocess import prepare_excel_multiaugmented_results
 
 
 import tensorflow as tf
@@ -31,123 +34,38 @@ from dlshm.dlimages.ICSHM_tasks import ICSHM_structural_task, ICSHM_damage_task,
 RES_X=640
 RES_Y=320
 BATCH_SIZE=16
-TASK_PATH = '/home/piotrek/Computations/Ai/ICSHM'
-SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
+SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
 
-# TASK_NAME='ICSHM_STRUCT_DeepLabV3p_LR3_none'
-# model = DeeplabV3PlusChat((RES_Y, RES_X, 3), 4)
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.001)
-# task.train()
-# del model
-# gc.collect()
-#
-# TASK_NAME='ICSHM_STRUCT_DeepLabV3p_LR4_none'
-# model = DeeplabV3PlusChat((RES_Y, RES_X, 3), 4)
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.0001)
-# task.train()
-# del model
-# gc.collect()
+augmentations =  (  ("none", "_none", None),
+                    ("brightness", "_br", augment_brightness),
+                    ("contrast", "_cn", augment_contrast),
+                    ("gamma", "_gm", augment_gamma),
+                    ("noise", "_ns", augment_noise),
+                    ("flip", "_fl", augment_flip),
+                    ("rotation", "_rot", augment_flip),
+                    ("cutmix", "_cut", augment_flip),
+                    ("all", "_all", augment_all))
 
-# TASK_NAME='ICSHM_STRUCT_DeepLabV3p_LR5_none'
-# model = DeeplabV3PlusChat((RES_Y, RES_X, 3), 4)
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.00001)
-# task.train()
-# del model
-# gc.collect()
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_CUSTOM_UNET', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_LR45', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_np', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_inceptionv3', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101_lr45', augmentations, nrows=5)
 
-# TASK_NAME='ICSHM_STRUCT_DeepLabV3p_LR45_none'
-# model = DeeplabV3PlusChat((RES_Y, RES_X, 3), 4)
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.00005)
-# task.train()
-# del model
-# gc.collect()
-
-# TASK_NAME='ICSHM_STRUCT_UNET_rn18_LR3'
-# model = sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.001)
-# task.train()
-# del model
-# gc.collect()
-#
-# TASK_NAME='ICSHM_STRUCT_UNET_rn18_LR4'
-# model = sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.0001)
-# task.train()
-# del model
-# gc.collect()
-#
-# TASK_NAME='ICSHM_STRUCT_UNET_rn18_LR5'
-# model = sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.00001)
-# task.train()
-# del model
-# gc.collect()
-
-# TASK_NAME='ICSHM_STRUCT_UNET_rn18_LR45'
-# model = sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.00005)
-# task.train()
-# del model
-# gc.collect()
-#
-# TASK_NAME='ICSHM_STRUCT_UNET_rn101_LR3'
-# model = sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.001)
-# task.train()
-# del model
-# gc.collect()
-#
-# TASK_NAME='ICSHM_STRUCT_UNET_rn101_LR4'
-# model = sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.0001)
-# task.train()
-# del model
-# gc.collect()
-#
-# TASK_NAME='ICSHM_STRUCT_UNET_rn101_LR5'
-# model = sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.00001)
-# task.train()
-# del model
-# gc.collect()
-#
-# TASK_NAME='ICSHM_STRUCT_UNET_rn101_LR45'
-# model = sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.00005)
-# task.train()
-# del model
-# gc.collect()
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_CUSTOM_UNET', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_DEEPLABV3p_np', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_inceptionv3', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101', augmentations,nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101_lr45', augmentations,nrows=4)
 
 
-TASK_NAME='ICSHM_DMG_UNET_rn101_LR3np'
-model = sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights=None, classes=3, activation="softmax")
-task = ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.001)
-task.train()
-del model
-gc.collect()
+# TASK_NAME='ICSHM_STRUCT_UNET_rn18'
 
-TASK_NAME='ICSHM_DMG_UNET_rn101_LR4np'
-model = sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights=None, classes=3, activation="softmax")
-task = ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.0001)
-task.train()
-del model
-gc.collect()
-
-TASK_NAME='ICSHM_DMG_UNET_rn101_LR45np'
-model = sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights=None, classes=3, activation="softmax")
-task = ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.00005)
-task.train()
-del model
-gc.collect()
-
-TASK_NAME='ICSHM_DMG_UNET_rn101_LR5np'
-model = sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights=None, classes=3, activation="softmax")
-task = ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=0.00001)
-task.train()
-del model
-gc.collect()
-
-
+# create_unet_fn = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
+# multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations  )
 
 
 # TASK_NAME='ICSHM_STRUCT_UNET_rn18'
@@ -164,19 +82,17 @@ gc.collect()
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE  )
 
 
-
-
-# TASK_NAME='ICSHM_STRUCT_UNET_rn101_lr45'
+#TASK_NAME='ICSHM_STRUCT_UNET_rn101'
 # create_unet_fn = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00005, augmentation_fn=augmentation_fn)
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE  )
 #
 #
-# TASK_NAME='ICSHM_DMG_UNET_rn101_lr45'
+# TASK_NAME='ICSHM_DMG_UNET_rn101'
 # create_unet_fn = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00005,augmentation_fn=augmentation_fn)
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE  )
-
+#
 #
 #
 # TASK_NAME='ICSHM_STRUCT_UNET_inceptionv3'
@@ -190,7 +106,6 @@ gc.collect()
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE  )
 
-
 # TASK_NAME='ICSHM_STRUCT_CUSTOM_UNET'
 # create_unet_fn = lambda: custom_unet(input_shape=(RES_Y,RES_X,3), num_layers=6, filters=16, num_classes=4, output_activation="softmax")
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
@@ -201,27 +116,27 @@ gc.collect()
 # create_unet_fn = lambda: custom_unet(input_shape=(RES_Y,RES_X,3), num_layers=6, filters=16, num_classes=3, output_activation="softmax")
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE  )
-
-
+#
+#
 # TASK_NAME='ICSHM_STRUCT_DEEPLABV3p_np'
 # create_model_fn = lambda:  DeeplabV3Plus((RES_Y, RES_X, 3), 4, output_activation="softmax",is_pretrained=False)
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE  )
-
-
+#
+#
 # TASK_NAME='ICSHM_DMG_DEEPLABV3p_np'
 # create_model_fn = lambda: DeeplabV3Plus((RES_Y, RES_X, 3), 3, output_activation="softmax",is_pretrained=False)
 # create_dmg_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_dmg_task_fn, BATCH_SIZE  )
 #
 #
-# TASK_NAME='ICSHM_STRUCT_DEEPLABV3p_rn101V2_LR45'
+# TASK_NAME='ICSHM_STRUCT_DEEPLABV3p'
 # create_model_fn = lambda:  DeeplabV3Plus((RES_Y, RES_X, 3), 4, output_activation="softmax",is_pretrained=True)
-# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00005, augmentation_fn=augmentation_fn)
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE  )
 #
 #
-# TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn101V2_LR45'
+# TASK_NAME='ICSHM_DMG_DEEPLABV3p'
 # create_model_fn = lambda: DeeplabV3Plus((RES_Y, RES_X, 3), 3, output_activation="softmax",is_pretrained=True)
-# create_dmg_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS,  LEARNING_RATE=0.00005, augmentation_fn=augmentation_fn)
+# create_dmg_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_dmg_task_fn, BATCH_SIZE  )
