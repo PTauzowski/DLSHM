@@ -67,17 +67,19 @@ def augment_photo(X, Y):
     return X, Y
 
 
-class augment_brightness(Augmentation):
+class augment_brightness_class(Augmentation):
 
     def __init__(self):
         super().__init__('brightness','_br')
 
-    def __call__(self,X, Y, p=0.4):# p = 0.4
-        for i in range(X.shape[0]):
-            if tf.random.uniform([]) < p:
-                X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
 
-        return X, Y
+
+def augment_brightness(X, Y, p=0.4):# p = 0.4
+    for i in range(X.shape[0]):
+        if tf.random.uniform([]) < p:
+            X[i,] = tf.image.random_brightness(X[i,], max_delta=0.2).numpy()  # Random brightness
+
+    return X, Y
 
 def augment_contrast(X, Y,p=0.4): # p=0.4
     for i in range(X.shape[0]):

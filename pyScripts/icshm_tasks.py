@@ -33,9 +33,9 @@ from dlshm.dlimages.ICSHM_tasks import ICSHM_structural_task, ICSHM_damage_task,
 
 RES_X=640
 RES_Y=320
-BATCH_SIZE=16
-TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
-SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+BATCH_SIZE=32
+TASK_PATH = '/home/piotrek/Computations/Ai/ICSHM'
+SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
 
 augmentations =  (  ("none", "_none", None),
                     ("brightness", "_br", augment_brightness),
@@ -47,18 +47,25 @@ augmentations =  (  ("none", "_none", None),
                     ("cutmix", "_cut", augment_flip),
                     ("all", "_all", augment_all))
 
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_CUSTOM_UNET', augmentations, nrows=5)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_LR45', augmentations, nrows=5)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_np', augmentations, nrows=5)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_inceptionv3', augmentations, nrows=5)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101', augmentations, nrows=5)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101_lr45', augmentations, nrows=5)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_CUSTOM_UNET', augmentations, nrows=5)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_LR45', augmentations, nrows=5)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_np', augmentations, nrows=5)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_inceptionv3', augmentations, nrows=5)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101', augmentations, nrows=5)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn101_lr45', augmentations, nrows=5)
+#
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_CUSTOM_UNET', augmentations,nrows=4)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_DEEPLABV3p_np', augmentations,nrows=4)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_inceptionv3', augmentations,nrows=4)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101', augmentations,nrows=4)
+# prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101_lr45', augmentations,nrows=4)
 
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_CUSTOM_UNET', augmentations,nrows=4)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_DEEPLABV3p_np', augmentations,nrows=4)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_inceptionv3', augmentations,nrows=4)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101', augmentations,nrows=4)
-prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101_lr45', augmentations,nrows=4)
+
+TASK_NAME='ICSHM_STRUCT_UNET_inceptionv3_LR45_all'
+model = sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
+create_struct_task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, augmentation_fn=augment_all, LEARNING_RATE=0.00005)
+create_struct_task.train()
+
 
 
 # TASK_NAME='ICSHM_STRUCT_UNET_rn18'
