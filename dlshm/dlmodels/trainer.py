@@ -5,17 +5,57 @@ import cv2 as cv
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from keras.src.callbacks import Callback
+from keras.src.ops import math
 
 from tensorflow import keras
 from flatbuffers.packer import float32
 from matplotlib import pyplot as plt
 from keras.metrics import Accuracy, CategoricalAccuracy
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
-
+import math
 # import datetime as dt
 
 import numpy as np
 
+class CosineAnnealingScheduler(Callback):
+    def __init__(self, T_max, eta_max, eta_min=0, verbose=1):
+        super().__init__()
+        self.T_max = T_max          # Total epochs
+        self.eta_max = eta_max      # Starting LR
+        self.eta_min = eta_min      # Final LR
+        self.verbose = verbose
+
+    def on_epoch_begin(self, epoch, logs=None):
+        lr = self.eta_min + (self.eta_max - self.eta_min) * \
+             (1 + math.cos(math.pi * epoch / self.T_max)) / 2
+        self.model.optimizer.learning_rate.assign(lr)
+        if self.verbose:
+            print(f"\nEpoch {epoch+1}: CosineAnnealingScheduler setting learning rate to {lr:.6f}.")
+
+
+class CyclicLR(Callback):
+    def __init__(self, base_lr=1e-6, max_lr=5e-5, step_size=20, mode='triangular2', verbose=1):
+        super().__init__()
+        self.base_lr = base_lr
+        self.max_lr = max_lr
+        self.step_size = step_size
+        self.mode = mode
+        self.verbose = verbose
+        self.iteration = 0
+
+    def clr(self):
+        cycle = math.floor(1 + self.iteration / (2 * self.step_size))
+        x = abs(self.iteration / self.step_size - 2 * cycle + 1)
+        scale_fn = lambda cycle: 1 / (2. ** (cycle - 1)) if self.mode == 'triangular2' else 1
+        return self.base_lr + (self.max_lr - self.base_lr) * max(0, (1 - x)) * scale_fn(cycle)
+
+    def on_train_batch_begin(self, batch, logs=None):
+        lr = self.clr()
+        self.model.optimizer.learning_rate.assign(lr)
+        if self.verbose and self.iteration % self.step_size == 0:
+            print(f"\nBatch {self.iteration}: CyclicLR setting learning rate to {lr:.6f}.")
+        self.iteration += 1
 
 def psnr(super_resolution, high_resolution):
     """Compute the peak signal-to-noise ratio, measures quality of image."""
@@ -56,12 +96,28 @@ class DLTrainer:
             mode="min",  # "min" because lower loss is better
             verbose=1  # Print a message when saving
         )
+        #
+        # callbacks = [
+        #     checkpoint_callback,
+        #     ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=5, verbose=1),
+        #     EarlyStopping(monitor="val_loss", patience=10, verbose=1, restore_best_weights=True)
+        # ]
+
+        cosine_scheduler = CosineAnnealingScheduler(T_max=100, eta_max=1e-4, eta_min=1e-6)
 
         callbacks = [
             checkpoint_callback,
-            ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=5, verbose=1),
-            EarlyStopping(monitor="val_loss", patience=10, verbose=1, restore_best_weights=True)
+            EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True, verbose=1),
+            cosine_scheduler
         ]
+
+        # cyclic_lr = CyclicLR(base_lr=1e-6, max_lr=5e-5, step_size=20, mode='triangular2')
+        #
+        # callbacks = [
+        #     checkpoint_callback,
+        #     EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True, verbose=1),
+        #     cyclic_lr
+        # ]
 
         training_time_start = time.process_time()
         self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=callbacks)

@@ -61,7 +61,7 @@ augmentations =  (  ("none", "_none", None),
 # prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101_lr45', augmentations,nrows=4)
 
 
-TASK_NAME='ICSHM_STRUCT_UNET_inceptionv3_LR45_all'
+TASK_NAME='ICSHM_STRUCT_UNET_inceptionv3_LR45cos2_all'
 model = sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
 create_struct_task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, augmentation_fn=augment_all, LEARNING_RATE=0.00005)
 create_struct_task.train()
