@@ -1,11 +1,3 @@
-# Highly accurate boundaries segmentation using BASNet
-#
-# Author: Hamid Ali
-# Date created: 2023/05/30
-# Last modified: 2025/01/24
-# Description: Boundaries aware segmentation model trained on the DUTS dataset.
-# Taken from Keras examples
-
 
 import os
 
@@ -24,107 +16,6 @@ import keras
 from keras import layers, ops
 
 keras.config.disable_traceback_filtering()
-
-
-IMAGE_SIZE = 288
-BATCH_SIZE = 8
-OUT_CLASSES = 1
-TRAIN_SPLIT_RATIO = 0.90
-
-
-# data_dir = keras.utils.get_file(
-#     origin="http://saliencydetection.net/duts/download/DUTS-TE.zip",
-#     extract=True,
-# )
-data_dir = '/home/piotrek/Computations/Ai/Data/DUTS-TE'
-
-
-def load_paths(path, split_ratio):
-    images = sorted(glob(os.path.join(path, "DUTS-TE-Image/*")))[:140]
-    masks = sorted(glob(os.path.join(path, "DUTS-TE-Mask/*")))[:140]
-    len_ = int(len(images) * split_ratio)
-    return (images[:len_], masks[:len_]), (images[len_:], masks[len_:])
-
-
-class Dataset(keras.utils.PyDataset):
-    def __init__(
-        self,
-        image_paths,
-        mask_paths,
-        img_size,
-        out_classes,
-        batch,
-        shuffle=True,
-        **kwargs,
-    ):
-        if shuffle:
-            perm = np.random.permutation(len(image_paths))
-            image_paths = [image_paths[i] for i in perm]
-            mask_paths = [mask_paths[i] for i in perm]
-        self.image_paths = image_paths
-        self.mask_paths = mask_paths
-        self.img_size = img_size
-        self.out_classes = out_classes
-        self.batch_size = batch
-        super().__init__(*kwargs)
-
-    def __len__(self):
-        return len(self.image_paths) // self.batch_size
-
-    def __getitem__(self, idx):
-        batch_x, batch_y = [], []
-        for i in range(idx * self.batch_size, (idx + 1) * self.batch_size):
-            x, y = self.preprocess(
-                self.image_paths[i],
-                self.mask_paths[i],
-                self.img_size,
-            )
-            batch_x.append(x)
-            batch_y.append(y)
-        batch_x = np.stack(batch_x, axis=0)
-        batch_y = np.stack(batch_y, axis=0)
-        return batch_x, batch_y
-
-    def read_image(self, path, size, mode):
-        x = keras.utils.load_img(path, target_size=size, color_mode=mode)
-        x = keras.utils.img_to_array(x)
-        x = (x / 255.0).astype(np.float32)
-        return x
-
-    def preprocess(self, x_batch, y_batch, img_size):
-        images = self.read_image(x_batch, (img_size, img_size), mode="rgb")  # image
-        masks = self.read_image(y_batch, (img_size, img_size), mode="grayscale")  # mask
-        return images, masks
-
-
-train_paths, val_paths = load_paths(data_dir, TRAIN_SPLIT_RATIO)
-
-train_dataset = Dataset(
-    train_paths[0], train_paths[1], IMAGE_SIZE, OUT_CLASSES, BATCH_SIZE, shuffle=True
-)
-val_dataset = Dataset(
-    val_paths[0], val_paths[1], IMAGE_SIZE, OUT_CLASSES, BATCH_SIZE, shuffle=False
-)
-
-def display(display_list):
-    title = ["Input Image", "True Mask", "Predicted Mask"]
-
-    for i in range(len(display_list)):
-        plt.subplot(1, len(display_list), i + 1)
-        plt.title(title[i])
-        plt.imshow(keras.utils.array_to_img(display_list[i]), cmap="gray")
-        plt.axis("off")
-    plt.show()
-
-
-for image, mask in val_dataset:
-    display([image[0], mask[0]])
-    break
-
-print(f"Unique values count: {len(np.unique((mask[0] * 255)))}")
-print("Unique values:")
-print(np.unique((mask[0] * 255)).astype(int))
-
 
 
 def basic_block(x_input, filters, stride=1, down_sample=None, activation=None):
@@ -297,7 +188,7 @@ class BASNet(keras.Model):
         output.extend(predict_model.output)
 
         # Activations.
-        output = [layers.Activation("sigmoid")(x) for x in output]
+        output = [layers.Activation("softmax")(x) for x in output]
         super().__init__(inputs=predict_model.input, outputs=output)
 
         self.smooth = 1.0e-9
@@ -333,28 +224,3 @@ class BASNet(keras.Model):
             # Add all three losses.
             total += cross_entropy_loss + ssim_loss + iou_loss
         return total
-
-
-
-basnet_model = BASNet(
-    input_shape=[IMAGE_SIZE, IMAGE_SIZE, 3], out_classes=OUT_CLASSES
-)  # Create model.
-basnet_model.summary()  # Show model summary.
-
-optimizer = keras.optimizers.Adam(learning_rate=1e-4, epsilon=1e-8)
-# Compile model.
-basnet_model.compile(
-    optimizer=optimizer,
-    metrics=[keras.metrics.MeanAbsoluteError(name="mae") for _ in basnet_model.outputs],
-)
-
-basnet_model.fit(train_dataset, validation_data=val_dataset, epochs=50)
-
-def normalize_output(prediction):
-    max_value = np.max(prediction)
-    min_value = np.min(prediction)
-    return (prediction - min_value) / (max_value - min_value)
-
-for (image, mask), _ in zip(val_dataset, range(1)):
-    pred_mask = basnet_model.predict(image)
-    display([image[0], mask[0], normalize_output(pred_mask[0][0])])
