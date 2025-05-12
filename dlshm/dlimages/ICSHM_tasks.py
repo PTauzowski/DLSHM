@@ -72,23 +72,23 @@ class ICSHM_Task:
 
 
 class ICSHM_structural_task(ICSHM_Task):
-    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, BATCH_SIZE=32, LEARNING_RATE = 0.0001, augmentation_fn=None):
+    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, TRAIN_DIR = 'Struct',RES_X=640, RES_Y=320, BATCH_SIZE=32, LEARNING_RATE = 0.00005, augmentation_fn=None):
         super().__init__(model=model,TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, N_CLASSES=4, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=LEARNING_RATE, augmentation_fn=augmentation_fn)
         self.class_weights = np.array([0.07, 0.33, 0.35, 0.25])
         self.csv_ind=5;
         self.class_names = [ "Nonstructural", "Slab", "Beam", "Column" ]
         self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
-        self.create_dataset(os.path.join('TrainSets','Struct'),ICSHM_STRUCT_Converter(self.RES_X, self.RES_Y))
+        self.create_dataset(os.path.join('TrainSets',TRAIN_DIR),ICSHM_STRUCT_Converter(self.RES_X, self.RES_Y))
 
 
 class ICSHM_damage_task(ICSHM_Task):
-    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, BATCH_SIZE=32, LEARNING_RATE = 0.0001, augmentation_fn=None):
+    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, TRAIN_DIR = 'Dmg', RES_X=640, RES_Y=320, BATCH_SIZE=32, LEARNING_RATE = 0.00005, augmentation_fn=None):
         super().__init__(model=model,TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, N_CLASSES=3,BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=LEARNING_RATE, augmentation_fn=augmentation_fn)
         self.class_weights = np.array([ 0.00174144, 0.09980335, 0.8984552 ])
         self.csv_ind = 6;
         self.class_names = [ "Background", "Cracks", "Reinforcement" ]
         self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
-        self.create_dataset(os.path.join('TrainSets','Dmg'),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
+        self.create_dataset(os.path.join('TrainSets',TRAIN_DIR),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
 
 
 def multi_augmentation_training_structural(model_basename, create_model_fn, task_fn, BATCH_SIZE, augmentations  ):
@@ -96,13 +96,13 @@ def multi_augmentation_training_structural(model_basename, create_model_fn, task
     print("* MULTI augmented training for model :",model_basename )
     for augmentation in augmentations:
         model = create_model_fn()
-        task = task_fn( model_basename + augmentation.postfix, model, augmentation, BATCH_SIZE)
+        task = task_fn( model_basename + augmentation[1], model, augmentation, BATCH_SIZE)
         task.train()
         del model
         gc.collect()
 
     model = create_model_fn()
-    task = task_fn(model_basename + "_br", model, augment_brightness(), BATCH_SIZE )
+    task = task_fn(model_basename + "_br", model, augment_brightness, BATCH_SIZE )
     task.train()
     del model
     gc.collect()

@@ -96,20 +96,20 @@ class DLTrainer:
             mode="min",  # "min" because lower loss is better
             verbose=1  # Print a message when saving
         )
-        #
-        # callbacks = [
-        #     checkpoint_callback,
-        #     ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=5, verbose=1),
-        #     EarlyStopping(monitor="val_loss", patience=10, verbose=1, restore_best_weights=True)
-        # ]
-
-        cosine_scheduler = CosineAnnealingScheduler(T_max=100, eta_max=1e-4, eta_min=1e-6)
 
         callbacks = [
             checkpoint_callback,
-            EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True, verbose=1),
-            cosine_scheduler
+            ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=5, verbose=1),
+            EarlyStopping(monitor="val_loss", patience=10, verbose=1, restore_best_weights=True)
         ]
+
+        # cosine_scheduler = CosineAnnealingScheduler(T_max=100, eta_max=1e-4, eta_min=1e-6)
+        #
+        # callbacks = [
+        #     checkpoint_callback,
+        #     EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True, verbose=1),
+        #     cosine_scheduler
+        # ]
 
         # cyclic_lr = CyclicLR(base_lr=1e-6, max_lr=5e-5, step_size=20, mode='triangular2')
         #
