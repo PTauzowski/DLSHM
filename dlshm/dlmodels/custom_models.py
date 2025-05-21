@@ -82,10 +82,6 @@ def DeepLabV3_1(input_shape=(512, 512, 3), num_classes=21, backbone='resnet50'):
 
     return keras.Model(inputs=base_model.input, outputs=x)
 
-
-
-
-
 def build_vgg19_segmentation_model(input_shape, num_classes=8):
     # Use VGG19 without the top layers
     vgg19 = tf.keras.applications.VGG19(weights="imagenet",include_top=False, input_shape=input_shape)
@@ -201,6 +197,7 @@ def DeeplabV3Plus(image_size, num_classes, output_activation='softmax',is_pretra
     resnet50 = applications.ResNet101V2(
         weights=weights, include_top=False, input_tensor=model_input
     )
+
 
     # weights = "imagenet", include_top = False, input_tensor = model_input
 
