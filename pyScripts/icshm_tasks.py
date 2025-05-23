@@ -1,6 +1,8 @@
 import glob
 import os
 
+import keras_hub
+
 from dlshm.dlimages.augmentations import augment_brightness, augment_flip, augment_contrast, augment_gamma, \
     augment_noise, augment_all
 from dlshm.dlmodels.basnet import BASNet
@@ -35,8 +37,8 @@ from dlshm.dlimages.ICSHM_tasks import ICSHM_structural_task, ICSHM_damage_task,
 RES_X=640
 RES_Y=320
 BATCH_SIZE=32
-TASK_PATH = '/home/piotrek/Computations/Ai/ICSHM'
-SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
+SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
 
 augmentations =  (  ("none", "_none", None),
                     ("brightness", "_br", augment_brightness),
@@ -62,14 +64,15 @@ augmentations =  (  ("none", "_none", None),
 # prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101_lr45', augmentations,nrows=4)
 
 
+
 import keras
 keras.config.disable_traceback_filtering()
 
-TASK_NAME='ICSHM_STRUCT_BASNet_LR45cos2_all'
-#model = sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-model = BASNet( input_shape=(RES_Y, RES_X, 3), out_classes=4 )  # Create mod
-create_struct_task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, augmentation_fn=augment_all, LEARNING_RATE=0.00005)
-create_struct_task.train()
+# TASK_NAME='ICSHM_STRUCT_BASNet_LR45cos2_all'
+# #model = sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
+# model = BASNet( input_shape=(RES_Y, RES_X, 3), out_classes=4 )  # Create mod
+# create_struct_task = ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, augmentation_fn=augment_all, LEARNING_RATE=0.00005)
+# create_struct_task.train()
 
 
 
@@ -152,3 +155,16 @@ create_struct_task.train()
 # create_model_fn = lambda: DeeplabV3Plus((RES_Y, RES_X, 3), 3, output_activation="softmax",is_pretrained=True)
 # create_dmg_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_dmg_task_fn, BATCH_SIZE  )
+
+
+# Load a trained backbone to extract features from it's `pyramid_outputs`.
+image_encoder = keras_hub.models.ResNetBackbone.from_preset(
+    "resnet_101_imagenet"
+)
+
+TASK_NAME='ICSHM_STRUCT_DEEPLABV3p'
+create_model_fn = lambda:  keras_hub.models.DeepLabV3Backbone( image_encoder=image_encoder, projection_filters=48, low_level_feature_key="P2", spatial_pyramid_pooling_key="P5", upsampling_size = 8, dilation_rates = [6, 12, 18] )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations )
+
+
