@@ -1,8 +1,11 @@
+import keras_hub
 import tensorflow as tf
 from keras import Input, applications, initializers, layers, Model
 from keras.layers import AveragePooling2D, Conv2D, BatchNormalization, UpSampling2D, Concatenate,Conv2DTranspose
 
 import tensorflow as tf
+from keras.src.layers import Activation
+from keras_hub.src.models.deeplab_v3 import DeepLabV3Backbone
 from tensorflow import keras
 from keras import layers
 
@@ -330,3 +333,25 @@ def DeeplabV3Plus101(image_size, num_classes, output_activation='softmax'):
     x = Conv2DTranspose(64, (2, 2), strides=(2, 2), padding="same")(x)
     model_output = Conv2D(num_classes, kernel_size=(1, 1), activation=output_activation, padding="same")(x)
     return Model(inputs=model_input, outputs=model_output)
+
+def create_deeplab_model(resnet_name, num_classes):
+    image_encoder = keras_hub.models.ResNetBackbone.from_preset(
+        resnet_name
+    )
+    backbone = DeepLabV3Backbone(
+        image_encoder=image_encoder,
+        projection_filters=64,
+        low_level_feature_key="P2",
+        spatial_pyramid_pooling_key="P5",
+        upsampling_size=8,
+        dilation_rates=[6, 12, 18]
+    )
+
+    # Get output of backbone
+    x = backbone.output
+    x = Conv2D(num_classes, kernel_size=1, padding="same")(x)
+    out = Activation("softmax")(x)
+
+    # Define model using backbone.input
+    return Model(inputs=backbone.input, outputs=out), backbone
+

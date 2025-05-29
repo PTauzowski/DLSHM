@@ -12,6 +12,7 @@ from dlshm.dlmodels import trainer
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
 from dlshm.dlimages.data_processing import ICSHM_STRUCT_Converter, ICSHM_DMG_Converter, ICSHMDataManager
 from dlshm.dlmodels.trainer import DLTrainer
+from pyScripts.icshm_rgb_batch import LEARNING_RATE
 
 
 class ICSHM_Task:
@@ -39,35 +40,40 @@ class ICSHM_Task:
     def train(self):
         self.dataSource = DataSource(self.TRAIN_PATH, train_ratio=0.80, validation_ratio=0.15 )
         self.trainer = DLTrainer(self.TASK_PATH, self.TASK_NAME, self.model)
-        train_set, validation_set = self.dataSource.get_training_data()
-        train_gen = DataGeneratorFromNumpyFiles(train_set, self.BATCH_SIZE, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES, augmentation_fn=self.augmentation_fn)
-        validation_gen = DataGeneratorFromNumpyFiles(validation_set, 1, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
-        test_gen = DataGeneratorFromNumpyFiles(self.dataSource.get_test_files(), 1, (self.RES_Y, self.RES_X), (self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
-        model = self.trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
+        if not self.trainer.model_dir_exists:
+            train_set, validation_set = self.dataSource.get_training_data()
+            train_gen = DataGeneratorFromNumpyFiles(train_set, self.BATCH_SIZE, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES, augmentation_fn=self.augmentation_fn)
+            validation_gen = DataGeneratorFromNumpyFiles(validation_set, 1, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
+            test_gen = DataGeneratorFromNumpyFiles(self.dataSource.get_test_files(), 1, (self.RES_Y, self.RES_X), (self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
+            model = self.trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
-        # Kompilacja modelu i wyswitlenie informacji:
-        # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss=loss_fn, metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(N_CLASSES)])
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=self.LEARNING_RATE), loss="categorical_crossentropy",
-                      metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(self.N_CLASSES)])
-        model.summary()
-        # gener_test(os.path.join('/home/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
+            # Kompilacja modelu i wyswitlenie informacji:
+            # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss=loss_fn, metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(N_CLASSES)])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=self.LEARNING_RATE), loss="categorical_crossentropy",
+                          metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(self.N_CLASSES)])
+            model.summary()
+            # gener_test(os.path.join('/home/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
 
-        # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
-        self.trainer.train(train_gen, validation_gen, self.EPOCHS, self.BATCH_SIZE)
+            # Rozpoczęcie treningu (w używania wytrenowanego modelu komentujemy funkcje poniżej)
+            self.trainer.train(train_gen, validation_gen, self.EPOCHS, self.BATCH_SIZE)
 
-        # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
-        print("Evaluate on test data")
-        results = model.evaluate(test_gen, batch_size=1)
-        print("test results:", results)
+            # Poniższe funkcje są używane tylko w przypadku trenowania nowych modeli
+            print("Evaluate on test data")
+            results = model.evaluate(test_gen, batch_size=1)
+            print("test results:", results)
 
-        # Testowanie na danych testowych (nie walidacyjnych)Unet-test
-        self.trainer.test_model(test_gen,test_dmg_segmentation)
-        dfs, df = self.trainer.compute_gen_measures(test_gen,self.class_weights, self.class_names)
-        excel_path = self.trainer.create_model_dir('ExcelResults')
-        with pd.ExcelWriter(os.path.join(excel_path,self.TASK_NAME+'_metrics.xlsx'), engine='openpyxl') as writer:
-             dfs.to_excel(writer, sheet_name='ICSHM', index=False)
-             df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
-        self.trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+            # Testowanie na danych testowych (nie walidacyjnych)Unet-test
+            self.trainer.test_model(test_gen,test_dmg_segmentation)
+            dfs, df = self.trainer.compute_gen_measures(test_gen,self.class_weights, self.class_names)
+            excel_path = self.trainer.create_model_dir('ExcelResults')
+            with pd.ExcelWriter(os.path.join(excel_path,self.TASK_NAME+'_metrics.xlsx'), engine='openpyxl') as writer:
+                 dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+                 df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+            self.trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
+        else:
+            print('Folder ',self.TASK_NAME,' exists. Model not trained')
+
+        return ~self.trainer.model_dir_exists
 
 
 
@@ -101,52 +107,68 @@ def multi_augmentation_training_structural(model_basename, create_model_fn, task
         del model
         gc.collect()
 
-    model = create_model_fn()
-    task = task_fn(model_basename + "_br", model, augment_brightness, BATCH_SIZE )
-    task.train()
-    del model
-    gc.collect()
+def multi_augmentation_transfer_learning( model_basename, create_model_fn, task_fn, BATCH_SIZE, augmentations):
+    tf.keras.backend.clear_session()
+    print("* MULTI augmented transfer learning for model :", model_basename)
+    for augmentation in augmentations:
+        model, backbone = create_model_fn()
+        for layer in backbone.layers:
+            layer.trainable = False
+        task = task_fn(model_basename + '_TR_' + augmentation[1], model, augmentations, BATCH_SIZE, LEARNING_RATE=0.001)
+        task.train()
+        for layer in backbone.layers:
+            layer.trainable = True
+        task = task_fn(model_basename + '_FT_' + augmentation[1], model, augmentations, BATCH_SIZE, LEARNING_RATE=0.0000045)
+        task.train()
+        del model
+        gc.collect()
 
-    model = create_model_fn()
-    task = task_fn(model_basename + "_cn", model, augment_contrast, BATCH_SIZE)
-    task.train()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    task = task_fn(model_basename + "_gm", model, augment_gamma, BATCH_SIZE)
-    task.train()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    task = task_fn(model_basename + "_ns", model, augment_noise, BATCH_SIZE)
-    task.train()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    task = task_fn(model_basename + "_fl", model, augment_flip, BATCH_SIZE)
-    task.train()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    task = task_fn(model_basename + "_rot", model, augment_rotation, BATCH_SIZE)
-    task.train()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    task = task_fn(model_basename + "_cut", model, augment_cutmix, BATCH_SIZE)
-    task.train()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    task = task_fn(model_basename + "_all", model, augment_all, BATCH_SIZE)
-    task.train()
-    del model
-    gc.collect()
+    # model = create_model_fn()
+    # task = task_fn(model_basename + "_br", model, augment_brightness, BATCH_SIZE )
+    # task.train()
+    # del model
+    # gc.collect()
+    #
+    # model = create_model_fn()
+    # task = task_fn(model_basename + "_cn", model, augment_contrast, BATCH_SIZE)
+    # task.train()
+    # del model
+    # gc.collect()
+    #
+    # model = create_model_fn()
+    # task = task_fn(model_basename + "_gm", model, augment_gamma, BATCH_SIZE)
+    # task.train()
+    # del model
+    # gc.collect()
+    #
+    # model = create_model_fn()
+    # task = task_fn(model_basename + "_ns", model, augment_noise, BATCH_SIZE)
+    # task.train()
+    # del model
+    # gc.collect()
+    #
+    # model = create_model_fn()
+    # task = task_fn(model_basename + "_fl", model, augment_flip, BATCH_SIZE)
+    # task.train()
+    # del model
+    # gc.collect()
+    #
+    # model = create_model_fn()
+    # task = task_fn(model_basename + "_rot", model, augment_rotation, BATCH_SIZE)
+    # task.train()
+    # del model
+    # gc.collect()
+    #
+    # model = create_model_fn()
+    # task = task_fn(model_basename + "_cut", model, augment_cutmix, BATCH_SIZE)
+    # task.train()
+    # del model
+    # gc.collect()
+    #
+    # model = create_model_fn()
+    # task = task_fn(model_basename + "_all", model, augment_all, BATCH_SIZE)
+    # task.train()
+    # del model
+    # gc.collect()
 
 
