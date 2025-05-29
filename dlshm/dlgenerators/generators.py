@@ -43,7 +43,7 @@ def sequenced_gener_test(pathName, data_generator, scope=-1):
 
 class DataSource:
     pass
-    def __init__(self, sourceDir, train_ratio=0.7, validation_ratio=0.15, sampleSize=-1, shuffle=True):
+    def __init__(self, sourceDir, train_ratio=0.7, validation_ratio=0.15, sampleSize=-1, shuffle=False):
         self.sourceDir=sourceDir
         self.trainRatio=train_ratio
         self.validation_ratio=validation_ratio
