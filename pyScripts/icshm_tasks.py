@@ -63,6 +63,17 @@ augmentations =  (  ("none", "_none", None),
 # prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101', augmentations,nrows=4)
 # prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn101_lr45', augmentations,nrows=4)
 
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_rn50_small', augmentations, nrows=5)
+#prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_DEEPLABV3p_rn50_small', augmentations, nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_DEEPLABV3p_rn18_small', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_DEEPLABV3p_rn18_small', augmentations, nrows=4)
+
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_srn101_small', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_srn101_small', augmentations, nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_rn152_small', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_rn152_small', augmentations, nrows=4)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_STRUCT_UNET_efnb4_small', augmentations, nrows=5)
+prepare_excel_multiaugmented_results(TASK_PATH, 'ICSHM_DMG_UNET_efnb4_small', augmentations, nrows=4)
 
 
 import keras
@@ -158,13 +169,13 @@ keras.config.disable_traceback_filtering()
 
 
 # Load a trained backbone to extract features from it's `pyramid_outputs`.
-image_encoder = keras_hub.models.ResNetBackbone.from_preset(
-    "resnet_101_imagenet"
-)
+# image_encoder = keras_hub.models.ResNetBackbone.from_preset(
+#     "resnet_101_imagenet"
+# )
 
-TASK_NAME='ICSHM_STRUCT_DEEPLABV3p'
-create_model_fn = lambda:  keras_hub.models.DeepLabV3Backbone( image_encoder=image_encoder, projection_filters=48, low_level_feature_key="P2", spatial_pyramid_pooling_key="P5", upsampling_size = 8, dilation_rates = [6, 12, 18] )
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
-multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations )
-
-
+# TASK_NAME='ICSHM_STRUCT_DEEPLABV3p'
+# create_model_fn = lambda:  keras_hub.models.DeepLabV3Backbone( image_encoder=image_encoder, projection_filters=48, low_level_feature_key="P2", spatial_pyramid_pooling_key="P5", upsampling_size = 8, dilation_rates = [6, 12, 18] )
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
+# multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations )
+#
+#
