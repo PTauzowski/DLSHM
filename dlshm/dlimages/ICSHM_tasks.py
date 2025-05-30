@@ -43,8 +43,8 @@ class ICSHM_Task:
         if not self.trainer.model_dir_exists:
             train_set, validation_set = self.dataSource.get_training_data()
             train_gen = DataGeneratorFromNumpyFiles(train_set, self.BATCH_SIZE, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES, augmentation_fn=self.augmentation_fn)
-            validation_gen = DataGeneratorFromNumpyFiles(validation_set, 1, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
-            test_gen = DataGeneratorFromNumpyFiles(self.dataSource.get_test_files(), 1, (self.RES_Y, self.RES_X), (self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES)
+            validation_gen = DataGeneratorFromNumpyFiles(validation_set, 1, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES,shuffle=False)
+            test_gen = DataGeneratorFromNumpyFiles(self.dataSource.get_test_files(), 1, (self.RES_Y, self.RES_X), (self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES,shuffle=False)
             model = self.trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
             # Kompilacja modelu i wyswitlenie informacji:
@@ -101,8 +101,8 @@ def multi_augmentation_training_structural(model_basename, create_model_fn, task
     tf.keras.backend.clear_session()
     print("* MULTI augmented training for model :",model_basename )
     for augmentation in augmentations:
-        model = create_model_fn()
-        task = task_fn( model_basename + augmentation[1], model, augmentation, BATCH_SIZE)
+        model, backbone = create_model_fn()
+        task = task_fn( model_basename, model, augmentation, BATCH_SIZE)
         task.train()
         del model
         gc.collect()
