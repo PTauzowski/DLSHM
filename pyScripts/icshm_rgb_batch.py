@@ -190,62 +190,62 @@ def rgb_model_function( model_name, model, augment_fn, batch_size, epochs):
         K.clear_session()
         gc.collect()
 
-def multi_augmentation_training_structural(model_basename, create_model_fn, batch_size, epochs):
-    tf.keras.backend.clear_session()
-    print("* MULTI augmented training for model :",model_basename)
-    model = create_model_fn()
-    rgb_model_function( model_basename+'_none', model, None, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    rgb_model_function( model_basename+'_br', model, augment_brightness, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    rgb_model_function( model_basename+'_cn', model, augment_contrast, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    rgb_model_function( model_basename+'_gm', model, augment_gamma, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    rgb_model_function( model_basename+'_ns', model, augment_noise, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    rgb_model_function( model_basename+'_fl', model, augment_flip, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    rgb_model_function( model_basename+'_rot', model, augment_rotation, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
-
-    model = model = create_model_fn()
-    rgb_model_function(model_basename + '_cut', model, augment_cutmix, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
-
-    model = create_model_fn()
-    rgb_model_function(model_basename + '_all', model, augment_all, batch_size=batch_size, epochs=epochs)
-    tf.keras.backend.clear_session()
-    del model
-    gc.collect()
+# def multi_augmentation_training_structural(model_basename, create_model_fn, batch_size, epochs):
+#     tf.keras.backend.clear_session()
+#     print("* MULTI augmented training for model :",model_basename)
+#     model = create_model_fn()
+#     rgb_model_function( model_basename+'_none', model, None, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
+#
+#     model = create_model_fn()
+#     rgb_model_function( model_basename+'_br', model, augment_brightness, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
+#
+#     model = create_model_fn()
+#     rgb_model_function( model_basename+'_cn', model, augment_contrast, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
+#
+#     model = create_model_fn()
+#     rgb_model_function( model_basename+'_gm', model, augment_gamma, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
+#
+#     model = create_model_fn()
+#     rgb_model_function( model_basename+'_ns', model, augment_noise, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
+#
+#     model = create_model_fn()
+#     rgb_model_function( model_basename+'_fl', model, augment_flip, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
+#
+#     model = create_model_fn()
+#     rgb_model_function( model_basename+'_rot', model, augment_rotation, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
+#
+#     model = model = create_model_fn()
+#     rgb_model_function(model_basename + '_cut', model, augment_cutmix, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
+#
+#     model = create_model_fn()
+#     rgb_model_function(model_basename + '_all', model, augment_all, batch_size=batch_size, epochs=epochs)
+#     tf.keras.backend.clear_session()
+#     del model
+#     gc.collect()
 
 
 
@@ -257,12 +257,12 @@ import gc
 #                   'densenet169', 'densenet201', 'inceptionresnetv2', 'inceptionv3', 'mobilenet', 'mobilenetv2', 'efficientnetb0',
 #                   'efficientnetb1', 'efficientnetb2', 'efficientnetb3', 'efficientnetb4', 'efficientnetb5', 'efficientnetb6', 'efficientnetb7']
 
-epochs=200
-batch_size=32
-
-model_basename='ICSHM_RGB_UNET_rn18'
-create_unet_sm = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
-multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
+# epochs=200
+# batch_size=32
+#
+# model_basename='ICSHM_RGB_UNET_rn18'
+# create_unet_sm = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")
+# multi_augmentation_training_structural(model_basename = model_basename, create_model_fn=create_unet_sm, batch_size=batch_size, epochs=epochs)
 
 # model_basename='ICSHM_RGB_UNET_rn101'
 # create_unet_sm = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, N_CHANNELS), encoder_weights="imagenet", classes=4, activation="softmax")

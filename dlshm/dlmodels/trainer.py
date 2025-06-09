@@ -69,6 +69,7 @@ class DLTrainer:
         self.task_path=task_path
         self.model_name=model_name
         self.model_path=os.path.join(task_path, model_name)
+        self.model_dir_exists=os.path.exists(self.model_path)
         self.models_path = self.create_model_dir('Models')
         self.tests_path = self.create_model_dir('TestResults')
         self.predictions_path = self.create_model_dir('Predictions')
@@ -122,7 +123,7 @@ class DLTrainer:
         training_time_start = time.process_time()
         self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=callbacks)
         self.model.save(self.model_pathname)
-        self.plot_training_history()
+        #self.plot_training_history()
         self.training_time=time.process_time() - training_time_start
 
     def test_model(self,test_gen, postprocess, extension='png'):
