@@ -37,8 +37,8 @@ from dlshm.dlimages.ICSHM_tasks import ICSHM_structural_task, ICSHM_damage_task,
 RES_X=320
 RES_Y=160
 BATCH_SIZE=32
-TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
-SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+TASK_PATH = '/Volumes/piotrek/Computations/Ai/ICSHM'
+SOURCE_PATH = '/Volumes/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
 
 
 augmentations =  (  ("none", "_none", None),
