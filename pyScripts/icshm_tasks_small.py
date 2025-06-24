@@ -8,6 +8,8 @@ from keras_hub.src.models.deeplab_v3 import DeepLabV3Backbone
 
 import tensorflow_hub as hub
 
+from dlshm.dlmodels.transformers import create_vit_model
+
 vit_model_url = "https://tfhub.dev/sayakpaul/vit_b16_fe/1"  # example feature extractor
 vit_encoder = hub.KerasLayer(vit_model_url, trainable=True)
 
@@ -87,8 +89,8 @@ keras.config.disable_traceback_filtering()
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_depth_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='STRUCTDsmall', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations  )
 
-TASK_NAME='ICSHM_STRUCT_UNET_rn18_small'
-create_unet_fn = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
+TASK_NAME='ICSHM_STRUCT_VIT__small'
+create_unet_fn = lambda: create_vit_model( input_shape=(RES_Y, RES_X, 3), num_classes=4 )
 create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='STRUCTsmall', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
 multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations  )
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations, nrows=5)
