@@ -6,6 +6,9 @@ from transformers import ViTModel
 import tensorflow as tf
 from transformers import TFAutoModel
 
+from pyScripts.icshm_tasks_small import vit_encoder
+
+
 class Patches(layers.Layer):
     def __init__(self, patch_size):
         super().__init__()

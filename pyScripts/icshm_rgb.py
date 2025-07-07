@@ -3,7 +3,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 #import keras.backend as K
 
 #from dlshm.dlimages import data_processing
-from dlshm.dlimages.data_processing import ICSHM_RGB_Converter,ICSHM_RGB_4_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter, compute_class_weights
+from dlshm.dlimages.data_processing import ICSHM_RGB_Converter,ICSHM_RGB_FULL_Converter, ICSHMDataManager, ICSHM_RGB_FULL_Converter, compute_class_weights
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
 from dlshm.dlmodels.c_unet import custom_unet
 
@@ -17,7 +17,7 @@ from dlshm.dlimages.augmentations import augment_photo, augment_all, augment_rot
 import pandas as pd
 import matplotlib as mpl
 
-from dlshm.dlimages.postprocess import write_prediction_segmentated, write_prediction_segmentated2, write_smooth_masks,write_smooth_masks_refined, test_dmg_segmentation
+from dlshm.dlimages.postprocess import write_prediction_segmentated, write_prediction_segmentated2, write_smooth_masks, test_dmg_segmentation
 
 import sys
 
@@ -48,16 +48,16 @@ if User=='Mariusz':
     TEST_PATH = 'F:/Python/DL4SHM_results' + '/' + 'Test'
 
 elif User=="Piotr":
-    TASK_PATH = "/home/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
+    TASK_PATH = "/Users/piotrek/Computations/Ai/ICSHM" # sys.argv[1]
     #TASK_PATH = "h:\\DL\\ICSHM"  # sys.argv[1]
     MODEL_PATH = TASK_PATH + '/' + CURRENT_MODEL_NAME
-    #IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
-    IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+    IMAGES_SOURCE_PATH = '/Users/piotrek/DataSets/Tokaido_dataset_share'
+    #IMAGES_SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
     #IMAGES_SOURCE_PATH = 'h:\\DL\\ICSHM\\DataSets\\Tokaido_dataset_share'
     PREDICTIONS_PATH=os.path.join( MODEL_PATH, 'Predictions' )
     #TRAIN_IMAGES_PATH= TASK_PATH + '/' + 'TrainSets/RGB'
-    TRAIN_IMAGES_PATH = '/home/piotrek/Computations/Ai/ICSHM/TrainSet4'
+    TRAIN_IMAGES_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TrainSet4'
     TEST_PATH = MODEL_PATH + '/' + 'Test'
 
 
@@ -110,7 +110,7 @@ CROSS_VALIDATION_FOLDS=6
 CLASS_NAMES =["Nonstructural", "Slab", "Beam", "Column" ]
 
 #dir_files_processing('/Users/piotrek/Computations/Ai/ICSHM/Predictions/Photos/Images', ImageResizer(RES_X,RES_Y,'/Users/piotrek/Computations/Ai/ICSHM/Predictions/Photos/PredictionPhotos'))
-imgRGB_conv  = ICSHM_RGB_4_Converter(RES_X, RES_Y)    # konwersja na pliki npy - jak sa, to juz tego nie robi
+imgRGB_conv  = ICSHM_RGB_FULL_Converter(RES_X, RES_Y)    # konwersja na pliki npy - jak sa, to juz tego nie robi
 data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH) # na razie nie wiadomo
 data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_IMAGES_PATH )  # powinno sie nie uruchamiac, jak sa npy
 
