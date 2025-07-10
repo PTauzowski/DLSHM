@@ -260,9 +260,9 @@ keras.config.disable_traceback_filtering()
 # multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
 # #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
 
-TASK_NAME='ICSHM_DMG_UNET_efnb5_45p'
+TASK_NAME='ICSHM_DMG_UNET_efnb5_4_focal'
 create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.000045)
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
 multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
 

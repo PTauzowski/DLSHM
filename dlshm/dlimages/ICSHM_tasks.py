@@ -50,9 +50,9 @@ class ICSHM_Task:
             model = self.trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
 
             # Kompilacja modelu i wyswitlenie informacji:
-            # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss=loss_fn, metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(N_CLASSES)])
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=self.LEARNING_RATE), loss="categorical_crossentropy",
-                          metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(self.N_CLASSES)])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss=self.loss_fn, metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(self.N_CLASSES)])
+            # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=self.LEARNING_RATE), loss="categorical_crossentropy",
+            #               metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(self.N_CLASSES)])
             model.summary()
             # gener_test(os.path.join('/home/piotrek/Computations/Ai/ICSHM/Previews', CURRENT_MODEL_NAME), train_gen, scope=100)
 
@@ -116,7 +116,7 @@ def multi_augmentation_training_structural(model_basename, create_model_fn, task
     tf.keras.backend.clear_session()
     print("* MULTI augmented training for model :",model_basename )
     for augmentation in augmentations:
-        model = create_model_fn()
+        model = create_model_fn()[0]
         task = task_fn( model_basename, model, augmentation, BATCH_SIZE)
         task.train()
         del model
