@@ -3,13 +3,14 @@ import gc
 import numpy as np
 import tensorflow as tf
 import pandas as pd
+from keras.src.losses import CategoricalFocalCrossentropy
 
 from dlshm.dlgenerators.generators import DataSource, DataGeneratorFromNumpyFiles
 from dlshm.dlimages.augmentations import augment_brightness, augment_contrast, augment_gamma, augment_noise, \
     augment_rotation, augment_cutmix, augment_all, augment_flip
 from dlshm.dlimages.postprocess import test_dmg_segmentation, write_prediction_segmentated2
 from dlshm.dlmodels import trainer
-from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
+from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy, dice_loss, tversky_loss
 from dlshm.dlimages.data_processing import ICSHM_STRUCT_Converter, ICSHM_DMG_Converter, ICSHMDataManager, \
     ICSHM_STRUCTD_Converter
 from dlshm.dlmodels.trainer import DLTrainer
@@ -104,7 +105,10 @@ class ICSHM_damage_task(ICSHM_Task):
         self.class_weights = np.array([ 0.00174144, 0.09980335, 0.8984552 ])
         self.csv_ind = 6;
         self.class_names = [ "Background", "Cracks", "Reinforcement" ]
-        self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
+        #self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
+        #self.loss_fn = dice_loss
+        #self.loss_fn = tversky_loss
+        self.loss_fn = CategoricalFocalCrossentropy(gamma=2.0, from_logits=False)
         self.create_dataset(os.path.join('TrainSets',TRAIN_DIR),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
 
 

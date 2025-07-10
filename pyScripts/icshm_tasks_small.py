@@ -8,7 +8,7 @@ from keras_hub.src.models.deeplab_v3 import DeepLabV3Backbone
 
 import tensorflow_hub as hub
 
-from dlshm.dlmodels.transformers import create_vit_model
+#from dlshm.dlmodels.transformers import create_vit_model
 
 vit_model_url = "https://tfhub.dev/sayakpaul/vit_b16_fe/1"  # example feature extractor
 vit_encoder = hub.KerasLayer(vit_model_url, trainable=True)
@@ -48,7 +48,7 @@ from dlshm.dlimages.ICSHM_tasks import ICSHM_structural_task, ICSHM_damage_task,
 
 RES_X=320
 RES_Y=160
-BATCH_SIZE=16
+BATCH_SIZE=32
 TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
 SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
 
@@ -89,10 +89,10 @@ keras.config.disable_traceback_filtering()
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_depth_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='STRUCTDsmall', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations  )
 
-TASK_NAME='ICSHM_STRUCT_VIT__small'
-create_unet_fn = lambda: create_vit_model( input_shape=(RES_Y, RES_X, 3), num_classes=4 )
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='STRUCTsmall', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
-multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations  )
+# TASK_NAME='ICSHM_STRUCT_VIT__small'
+# create_unet_fn = lambda: create_vit_model( input_shape=(RES_Y, RES_X, 3), num_classes=4 )
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='STRUCTsmall', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
+# multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations  )
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations, nrows=5)
 #
 #
@@ -111,10 +111,10 @@ multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations, nrows=5)
 
 #
-#TASK_NAME='ICSHM_DMG_UNET_rn101_small'
-# create_unet_fn = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='DMGsmall',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
-# multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations  )
+TASK_NAME='ICSHM_DMG_UNET_rn101_small'
+create_unet_fn = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='DMGsmall',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
+multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all  )
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations, nrows=4)
 
 #TASK_NAME='ICSHM_STRUCT_UNET_rn152_small'
@@ -285,7 +285,7 @@ multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_
 
 
 # TASK_NAME='ICSHM_STRUCT_DEEPLABV3p_rn18_small'
-create_model_fn = lambda:  create_deeplab_model( "resnet_18_imagenet", 4 )
+# create_model_fn = lambda:  create_deeplab_model( "resnet_18_imagenet", 4 )
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='STRUCTsmall', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations )
 #
