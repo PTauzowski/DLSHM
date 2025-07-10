@@ -115,7 +115,7 @@ def custom_unet(
     activation="relu",
     use_batch_norm=True,
     upsample_mode="deconv",  # 'deconv' or 'simple'
-    dropout=0.3,
+    dropout=0.1,
     dropout_change_per_layer=0.1,
     dropout_type="spatial",
     use_dropout_on_upsampling=False,

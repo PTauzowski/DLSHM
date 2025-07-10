@@ -3,14 +3,16 @@ import gc
 import numpy as np
 import tensorflow as tf
 import pandas as pd
+from keras.src.losses import CategoricalFocalCrossentropy
 
 from dlshm.dlgenerators.generators import DataSource, DataGeneratorFromNumpyFiles
 from dlshm.dlimages.augmentations import augment_brightness, augment_contrast, augment_gamma, augment_noise, \
     augment_rotation, augment_cutmix, augment_all, augment_flip
 from dlshm.dlimages.postprocess import test_dmg_segmentation, write_prediction_segmentated2
 from dlshm.dlmodels import trainer
-from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy
-from dlshm.dlimages.data_processing import ICSHM_STRUCT_Converter, ICSHM_DMG_Converter, ICSHMDataManager
+from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy, dice_loss, tversky_loss
+from dlshm.dlimages.data_processing import ICSHM_STRUCT_Converter, ICSHM_DMG_Converter, ICSHMDataManager, \
+    ICSHM_STRUCTD_Converter
 from dlshm.dlmodels.trainer import DLTrainer
 from pyScripts.icshm_rgb_batch import LEARNING_RATE
 
@@ -81,10 +83,20 @@ class ICSHM_structural_task(ICSHM_Task):
     def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, TRAIN_DIR = 'Struct',RES_X=640, RES_Y=320, BATCH_SIZE=32, LEARNING_RATE = 0.00005, augmentation_fn=None):
         super().__init__(model=model,TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, N_CLASSES=4, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=LEARNING_RATE, augmentation_fn=augmentation_fn)
         self.class_weights = np.array([0.07, 0.33, 0.35, 0.25])
-        self.csv_ind=5;
+        self.csv_ind=5
         self.class_names = [ "Nonstructural", "Slab", "Beam", "Column" ]
         self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
         self.create_dataset(os.path.join('TrainSets',TRAIN_DIR),ICSHM_STRUCT_Converter(self.RES_X, self.RES_Y))
+
+class ICSHM_structural_depth_task(ICSHM_Task):
+    def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, TRAIN_DIR = 'StructD',RES_X=640, RES_Y=320, BATCH_SIZE=32, LEARNING_RATE = 0.00005, augmentation_fn=None):
+        super().__init__(model=model,TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, N_CHANNELS=4, N_CLASSES=4, BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=LEARNING_RATE, augmentation_fn=augmentation_fn)
+        self.class_weights = np.array([0.07, 0.33, 0.35, 0.25])
+        self.csv_ind=5
+        self.class_names = [ "Nonstructural", "Slab", "Beam", "Column" ]
+        self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
+        self.create_dataset(os.path.join('TrainSets',TRAIN_DIR),ICSHM_STRUCTD_Converter(self.RES_X, self.RES_Y))
+
 
 
 class ICSHM_damage_task(ICSHM_Task):
@@ -93,7 +105,10 @@ class ICSHM_damage_task(ICSHM_Task):
         self.class_weights = np.array([ 0.00174144, 0.09980335, 0.8984552 ])
         self.csv_ind = 6;
         self.class_names = [ "Background", "Cracks", "Reinforcement" ]
-        self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
+        #self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
+        #self.loss_fn = dice_loss
+        #self.loss_fn = tversky_loss
+        self.loss_fn = CategoricalFocalCrossentropy(gamma=2.0, from_logits=False)
         self.create_dataset(os.path.join('TrainSets',TRAIN_DIR),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
 
 
@@ -101,7 +116,7 @@ def multi_augmentation_training_structural(model_basename, create_model_fn, task
     tf.keras.backend.clear_session()
     print("* MULTI augmented training for model :",model_basename )
     for augmentation in augmentations:
-        model, backbone = create_model_fn()
+        model = create_model_fn()
         task = task_fn( model_basename, model, augmentation, BATCH_SIZE)
         task.train()
         del model
