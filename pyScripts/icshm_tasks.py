@@ -224,104 +224,111 @@ keras.config.disable_traceback_filtering()
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
 #
 
-TASK_NAME='ICSHM_DMG_UNET_efnb6_05'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.000005)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+# TASK_NAME='ICSHM_DMG_UNET_efnb6_05'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.000005)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb6_1'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00001)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb6_2'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00002)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb6_4'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_STRUCT_UNET_efnb6_4'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Struct',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb7_4p'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb7", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
 
-TASK_NAME='ICSHM_DMG_UNET_efnb6_1'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00001)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb6_2'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00002)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb6_4'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_STRUCT_UNET_efnb6_4'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Struct',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb7_4'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb7", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_STRUCT_UNET_efnb7_4'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb7", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Struct',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb6_6'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00006)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb6_8'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00008)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb6_10'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.0001)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb5_05'
+TASK_NAME='ICSHM_DMG_UNET_efnb5_45p'
 create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.000005)
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.000045)
 multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
 
-TASK_NAME='ICSHM_DMG_UNET_efnb5_1'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00001)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+
+# TASK_NAME='ICSHM_STRUCT_UNET_efnb7_4'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb7", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Struct',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
 
-TASK_NAME='ICSHM_DMG_UNET_efnb5_2'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00002)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb5_4'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb5_6'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00006)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb5_8'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00008)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
-#prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
-
-TASK_NAME='ICSHM_DMG_UNET_efnb5_10'
-create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
-create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.0001)
-multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# TASK_NAME='ICSHM_DMG_UNET_efnb6_6'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00006)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb6_8'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00008)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb6_10'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb6", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.0001)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_05'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.000005)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_1'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00001)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_2'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00002)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_4'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_6'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00006)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_8'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00008)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
+# #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_10'
+# create_unet_fn = lambda: sm.Unet(backbone_name="efficientnetb5", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.0001)
+# multi_augmentation_training_structural( TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all )
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations_all, nrows=4)
