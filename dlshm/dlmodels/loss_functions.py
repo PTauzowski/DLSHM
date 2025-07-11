@@ -18,14 +18,19 @@ def weighted_categorical_crossentropy(class_weights):
     return loss
 
 def dice_loss(y_true, y_pred, smooth=1e-6):
+    y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.cast(y_pred, tf.float32)
     numerator = 2 * tf.reduce_sum(y_true * y_pred, axis=[1,2,3])
     denominator = tf.reduce_sum(y_true + y_pred, axis=[1,2,3])
-    return 1 - tf.reduce_mean((numerator + smooth) / (denominator + smooth))
+    dice = (numerator + smooth) / (denominator + smooth)
+    return 1 - tf.reduce_mean(dice)
 
 
 def tversky_loss(y_true, y_pred, alpha=0.7, beta=0.3, smooth=1e-6):
+    y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.cast(y_pred, tf.float32)
     TP = tf.reduce_sum(y_true * y_pred, axis=[1,2,3])
     FP = tf.reduce_sum((1 - y_true) * y_pred, axis=[1,2,3])
     FN = tf.reduce_sum(y_true * (1 - y_pred), axis=[1,2,3])
-    tversky_index = (TP + smooth) / (TP + alpha * FP + beta * FN + smooth)
-    return 1 - tf.reduce_mean(tversky_index)
+    tversky = (TP + smooth) / (TP + alpha * FP + beta * FN + smooth)
+    return 1 - tf.reduce_mean(tversky)

@@ -103,12 +103,12 @@ class ICSHM_damage_task(ICSHM_Task):
     def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, TRAIN_DIR = 'Dmg', RES_X=640, RES_Y=320, BATCH_SIZE=32, LEARNING_RATE = 0.00005, augmentation_fn=None):
         super().__init__(model=model,TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, N_CLASSES=3,BATCH_SIZE=BATCH_SIZE, LEARNING_RATE=LEARNING_RATE, augmentation_fn=augmentation_fn)
         self.class_weights = np.array([ 0.00174144, 0.09980335, 0.8984552 ])
-        self.csv_ind = 6;
+        self.csv_ind = 6
         self.class_names = [ "Background", "Cracks", "Reinforcement" ]
         #self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
-        #self.loss_fn = dice_loss
-        #self.loss_fn = tversky_loss
-        self.loss_fn = CategoricalFocalCrossentropy(gamma=2.0, from_logits=False)
+        self.loss_fn = tf.keras.losses.Dice()
+        #self.loss_fn = tf.keras.losses.tversky()
+        #self.loss_fn = CategoricalFocalCrossentropy(gamma=2.0, from_logits=False)
         self.create_dataset(os.path.join('TrainSets',TRAIN_DIR),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
 
 
@@ -116,7 +116,7 @@ def multi_augmentation_training_structural(model_basename, create_model_fn, task
     tf.keras.backend.clear_session()
     print("* MULTI augmented training for model :",model_basename )
     for augmentation in augmentations:
-        model = create_model_fn()[0]
+        model = create_model_fn()
         task = task_fn( model_basename, model, augmentation, BATCH_SIZE)
         task.train()
         del model
