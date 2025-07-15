@@ -106,8 +106,8 @@ class ICSHM_damage_task(ICSHM_Task):
         self.csv_ind = 6
         self.class_names = [ "Background", "Cracks", "Reinforcement" ]
         #self.loss_fn = weighted_categorical_crossentropy(self.class_weights / np.sum(self.class_weights))
-        self.loss_fn = tf.keras.losses.Dice()
-        #self.loss_fn = tf.keras.losses.tversky()
+        #self.loss_fn = tf.keras.losses.Dice()
+        self.loss_fn = tf.keras.losses.tversky
         #self.loss_fn = CategoricalFocalCrossentropy(gamma=2.0, from_logits=False)
         self.create_dataset(os.path.join('TrainSets',TRAIN_DIR),ICSHM_DMG_Converter(self.RES_X, self.RES_Y))
 

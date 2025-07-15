@@ -111,7 +111,7 @@ keras.config.disable_traceback_filtering()
 #prepare_excel_multiaugmented_results(TASK_PATH, TASK_NAME, augmentations, nrows=5)
 
 #
-TASK_NAME='ICSHM_DMG_UNET_rn101_small_dice'
+TASK_NAME='ICSHM_DMG_UNET_rn101_small_tversky'
 create_unet_fn = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
 create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='DMGsmall',RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
 multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE, augmentations=augmentations_all  )
