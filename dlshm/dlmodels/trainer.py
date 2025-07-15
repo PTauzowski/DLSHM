@@ -123,7 +123,7 @@ class DLTrainer:
         training_time_start = time.process_time()
         self.history = self.model.fit(train_gen, batch_size=batch_size, epochs=epochs, validation_data=validation_gen, callbacks=callbacks)
         self.model.save(self.model_pathname)
-        #self.plot_training_history()
+        self.plot_training_history()
         self.training_time=time.process_time() - training_time_start
 
     def test_model(self,test_gen, postprocess, extension='png'):
