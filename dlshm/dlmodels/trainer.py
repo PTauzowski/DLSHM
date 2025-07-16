@@ -8,6 +8,9 @@ import tensorflow as tf
 from keras.src.callbacks import Callback
 from keras.src.ops import math
 
+import matplotlib
+matplotlib.use('Agg')
+
 from tensorflow import keras
 from flatbuffers.packer import float32
 from matplotlib import pyplot as plt
@@ -17,6 +20,7 @@ import math
 # import datetime as dt
 
 import numpy as np
+
 
 class CosineAnnealingScheduler(Callback):
     def __init__(self, T_max, eta_max, eta_min=0, verbose=1):
