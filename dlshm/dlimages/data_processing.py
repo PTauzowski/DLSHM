@@ -248,7 +248,7 @@ class ICSHMDataManager:
         self.idx_valid = [i for i in range(len(col_valid)) if col_valid[i]]
         self.filenames = [self.data_csv.iloc[i][0] for i in range(len(col_valid)) if col_valid[i]]
 
-    def convert_data_to_numpy_format(self, process, dataset_path):
+    def convert_tokaido_data_to_numpy_format(self, process, dataset_path):
         isExist = os.path.exists(dataset_path)
         if not isExist:
             os.makedirs(dataset_path)
@@ -292,8 +292,59 @@ class ICSHMDataManager:
         self.weights = self.total_pixels / (self.class_pixel_counts + 1e-6)
         self.weights =  self.weights / sum(self.weights)
 
-    #class_weights = total_pixels / (class_pixel_counts + 1e-8)  # Add a small value to prevent division by zero
-    #return class_weights / np.sum(class_weights)
+    def convert_folders_data_to_numpy_format(self, process, image_path, masks_path, dataset_path):
+        isExist = os.path.exists(dataset_path)
+        if not isExist:
+            os.makedirs(dataset_path)
+        if not os.path.exists(image_path):
+            print('Cant import images from ' + image_path + ' because not exists')
+            return
+
+        if not os.path.exists(masks_path):
+            print('Cant import masks from ' + image_path + ' because not exists')
+            return
+
+        image_files = os.listdir(image_path)
+        masks_files = os.listdir(masks_path)
+
+        if len(image_files) != len(masks_files):
+            print('Non equal number of files in images and masks folder')
+            return
+
+        N=len(image_files)
+        for i in range(N):
+            filename = os.path.join(dataset_path,os.path.basename(image_files[i])+'.npy')
+            if not os.path.exists(filename):
+                try:
+                    imageName = os.path.join(image_path, image_files[i])
+                    labName = os.path.join(masks_path, masks_files[i])
+
+                    x, y = process(imageName, labName, None, None )
+
+                    # if i==0:
+                    #     self.class_pixel_counts = np.sum(y, axis=(0, 1))
+                    #     self.total_pixels = np.sum(self.class_pixel_counts)
+                    # else:
+                    #     self.class_pixel_counts = self.class_pixel_counts + np.sum(y, axis=(0, 1))
+                    #     self.total_pixels = self.total_pixels + np.sum(self.class_pixel_counts)
+
+                    with open(filename, 'wb') as f:
+                        np.save(f, x)
+                        np.save(f, y)
+                except Exception as err:
+                    print('Cant import ' + imageName + ' because:', err )
+                if i % 100 == 0:
+                    print('iter=', i, '/', N, flush=True)
+            else:
+                f=open(filename, 'rb')
+                x=np.load(f)
+                y=np.load(f)
+                # if i == 0:
+                #     self.class_pixel_counts = np.sum(y, axis=(0, 1))
+                #     self.total_pixels = np.sum(self.class_pixel_counts)
+                # else:
+                #     self.class_pixel_counts = self.class_pixel_counts + np.sum(y, axis=(0, 1))
+                #     self.total_pixels = self.total_pixels + np.sum(self.class_pixel_counts)
 
 def get_data(self):
         return self.filenames

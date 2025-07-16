@@ -112,7 +112,7 @@ CLASS_NAMES =["Nonstructural", "Slab", "Beam", "Column" ]
 #dir_files_processing('/Users/piotrek/Computations/Ai/ICSHM/Predictions/Photos/Images', ImageResizer(RES_X,RES_Y,'/Users/piotrek/Computations/Ai/ICSHM/Predictions/Photos/PredictionPhotos'))
 imgRGB_conv  = ICSHM_RGB_FULL_Converter(RES_X, RES_Y)    # konwersja na pliki npy - jak sa, to juz tego nie robi
 data_manager = ICSHMDataManager(IMAGES_SOURCE_PATH) # na razie nie wiadomo
-data_manager.convert_data_to_numpy_format( imgRGB_conv, TRAIN_IMAGES_PATH )  # powinno sie nie uruchamiac, jak sa npy
+data_manager.convert_tokaido_data_to_numpy_format(imgRGB_conv, TRAIN_IMAGES_PATH)  # powinno sie nie uruchamiac, jak sa npy
 
 # weights = compute_class_weights(y)
 print("Class Weights:", data_manager.weights)

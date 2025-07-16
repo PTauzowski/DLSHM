@@ -38,10 +38,10 @@ class ICSHM_Task:
     def create_dataset(self,train_dir,converter):
         self.data_manager = ICSHMDataManager(self.SOURCE_PATH,csv_ind=self.csv_ind)
         self.TRAIN_PATH = os.path.join(self.TASK_PATH, train_dir)
-        self.data_manager.convert_data_to_numpy_format(converter, self.TRAIN_PATH)
+        self.data_manager.convert_tokaido_data_to_numpy_format(converter, self.TRAIN_PATH)
 
     def train(self):
-        self.dataSource = DataSource(self.TRAIN_PATH, train_ratio=0.80, validation_ratio=0.15 )
+        self.dataSource = DataSource(self.TRAIN_PATH, train_ratio=0.70, validation_ratio=0.15 )
         self.trainer = DLTrainer(self.TASK_PATH, self.TASK_NAME, self.model)
         if not self.trainer.model_dir_exists:
             train_set, validation_set = self.dataSource.get_training_data()

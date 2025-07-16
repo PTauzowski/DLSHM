@@ -37,7 +37,7 @@ nLAYERS=4
 
 imgDMGC_conv  = ICSHM_DMGC_Converter(resX,resY)
 data_manager = ICSHMDataManager( images_source_path, csv_ind=6 )
-data_manager.convert_data_to_numpy_format(imgDMGC_conv, train_pathDMGC)
+data_manager.convert_tokaido_data_to_numpy_format(imgDMGC_conv, train_pathDMGC)
 
 #model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, filters=nFILTERS, num_classes=nCLASSES, output_activation="softmax")
 model = DeeplabV3Plus((resY,resX,nCHANNELS), nCLASSES)

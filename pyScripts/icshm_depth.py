@@ -41,7 +41,7 @@ LR = 0.001
 
 imgDepth_converter  = ICSHM_Depth_Converter(resX,resY)
 data_manager = ICSHMDataManager(images_source_path )
-data_manager.convert_data_to_numpy_format(imgDepth_converter, train_pathDepth)
+data_manager.convert_tokaido_data_to_numpy_format(imgDepth_converter, train_pathDepth)
 
 model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, num_classes=nCLASSES, output_activation="sigmoid")
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LR), loss="mean_absolute_error",  metrics=[tf.keras.metrics.MeanAbsoluteError(), tf.keras.metrics.MeanIoU(2)])

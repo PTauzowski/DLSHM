@@ -43,6 +43,6 @@ At first the <code>files_train.csv</code> have to be analysed to find out which 
 ```Python
 imgRGB_conv = ICSHM_RGB_Converter(resX, resY)
 data_manager = ICSHMDataManager(images_source_path)
-data_manager.convert_data_to_numpy_format(imgRGB_conv, train_pathRGB)
+data_manager.convert_tokaido_data_to_numpy_format(imgRGB_conv, train_pathRGB)
 ```
 As the art of preparing data for the tensorflow package teaches us, it is worth storing data for learning not in graphic files, but as matrices of the NumPy package. For this purpose, an object of the <code>Converter</code> class is created which defines how single image have to be transformed. Then <code>DataManager</code> class object is defined which is resposible for all data images manipulation

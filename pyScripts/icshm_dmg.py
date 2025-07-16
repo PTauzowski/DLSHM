@@ -68,7 +68,7 @@ LEARNING_RATE = 0.001
 
 imgDMG_conv  = ICSHM_DMG_Converter(RES_X,RES_Y)
 data_manager = ICSHMDataManager( IMAGES_SOURCE_PATH, csv_ind=6 )
-data_manager.convert_data_to_numpy_format(imgDMG_conv, TRAIN_IMAGES_PATH)
+data_manager.convert_tokaido_data_to_numpy_format(imgDMG_conv, TRAIN_IMAGES_PATH)
 
 model_unet = custom_unet(input_shape=(RES_Y,RES_X,N_CHANNELS), num_layers=N_LAYERS, filters=N_FILTERS, num_classes=N_CLASSES, output_activation="softmax")
 model_vgg19a = build_vgg19_segmentation_model(input_shape=(RES_Y,RES_X,3), num_classes=N_CLASSES)

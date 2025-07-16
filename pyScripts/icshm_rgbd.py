@@ -34,7 +34,7 @@ nLAYERS=4
 imgRGB_conv  = ICSHM_RGB_Converter(resX,resY)
 imgRGBD_conv  = ICSHM_RGBD_Converter(resX,resY)
 data_manager = ICSHMDataManager(images_source_path )
-data_manager.convert_data_to_numpy_format(imgRGBD_conv, train_pathRGBD)
+data_manager.convert_tokaido_data_to_numpy_format(imgRGBD_conv, train_pathRGBD)
 
 model = custom_unet(input_shape=(resY,resX,nCHANNELS), num_layers=nLAYERS, num_classes=nCLASSES, output_activation="softmax")
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss="categorical_crossentropy",  metrics=[tf.keras.metrics.CategoricalAccuracy(), tf.keras.metrics.MeanIoU(8)])
