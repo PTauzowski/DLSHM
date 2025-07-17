@@ -80,12 +80,16 @@ class DLTrainer:
         self.mosaic_predictions_path = self.create_model_dir('MosaicPredictions')
         self.model_pathname = os.path.join(self.models_path, self.model_name + '.keras')
         if model==None:
-            if os.path.exists(self.model_pathname):
-                model = tf.keras.models.load_model(self.model_pathname,compile=False)
-                print('Model ',model_name,'was found and loaded')
-            else:
-                print('Model ', model_name, 'was NOT found')
-        self.model=model
+            self.model = self.load_model()
+
+    def load_model(self):
+        model=None
+        if os.path.exists(self.model_pathname):
+            model = tf.keras.models.load_model(self.model_pathname, compile=False)
+            print('Model ', self.model_name, 'was found and loaded')
+        else:
+            print('Model ',self. model_name, 'was NOT found')
+        return model
 
     def create_model_dir(self,dir_name):
         path = os.path.join(self.model_path, dir_name)

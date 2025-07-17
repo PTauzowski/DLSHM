@@ -44,7 +44,7 @@ def write_prediction_segmentated(pathname, x, y):
          [0, 0, 0],  # background
          [1, 0, 0],  # mask 1 (red)
          [0, 1, 0],  # mask 2 (green)
-         [0, 0, 1]  # mask 3 (blue)
+         [0, 0, 1]   # mask 3 (blue)
     ], dtype=np.float32)
 
     nmasks = y.shape[2]

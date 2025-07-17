@@ -3,6 +3,7 @@ import gc
 import numpy as np
 import tensorflow as tf
 import pandas as pd
+import cv2 as cv
 from keras.src.losses import CategoricalFocalCrossentropy
 
 from dlshm.dlgenerators.generators import DataSource, DataGeneratorFromNumpyFiles
@@ -34,6 +35,10 @@ class ICSHM_Task:
         self.TASK_NAME = TASK_NAME
         self.EPOCHS = EPOCHS
         self.augmentation_fn = augmentation_fn
+
+    def load_model(self,filename):
+        self.model = tf.keras.models.load_model(filename,compile=False)
+        print('Model ',self.TASK_PATH,' was found and loaded')
 
     def create_dataset(self,train_dir,converter):
         self.data_manager = ICSHMDataManager(self.SOURCE_PATH,csv_ind=self.csv_ind)
@@ -77,6 +82,25 @@ class ICSHM_Task:
             print('Folder ',self.TASK_NAME,' exists. Model not trained')
 
         return ~self.trainer.model_dir_exists
+
+    def predict(self, img_source, postprocess):
+        index=1
+        self.trainer = DLTrainer(self.TASK_PATH, self.TASK_NAME, self.model)
+        print('Predicting images from dir:', img_source)
+        N = len(os.listdir(img_source))
+        for filename in os.listdir(img_source):
+            try:
+                #data_x = inputImgReader(os.path.join(img_source, filename))
+                data_x = cv.resize(cv.imread(os.path.join(img_source, filename), (self.resY, self.resX), anti_aliasing=True)).astype('float32')
+                data_y = self.trainer.model.predict(np.expand_dims(data_x,0))
+                postprocess(os.path.join(self.predictions_path, filename), data_x, data_y[0,])
+                # cv.imwrite(os.path.join(prediction_path, filename) + '_X.png',data_x*255 )
+                # cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', postprocess(data_x, data_y[0,]) * 255)
+            except Exception as e:
+                print('Cant import ' + filename + ' because', e)
+            index = index + 1
+            if index % 100 == 0:
+                print('iter=', index, '/', N, flush=True)
 
 
 
@@ -127,6 +151,7 @@ def multi_augmentation_training_structural(model_basename, create_model_fn, task
         del model
         gc.collect()
 
+
 def multi_augmentation_transfer_learning( model_basename, create_model_fn, task_fn, BATCH_SIZE, augmentations):
     tf.keras.backend.clear_session()
     print("* MULTI augmented transfer learning for model :", model_basename)
@@ -142,6 +167,30 @@ def multi_augmentation_transfer_learning( model_basename, create_model_fn, task_
         task.train()
         del model
         gc.collect()
+
+def predict_photos_in_all_tasks(task_path,photos_test_path):
+    os.listdir(task_path)
+    prefix = 'ICSHM_STRUCT'
+
+    filtered_folders = [
+        name for name in os.listdir(task_path)
+        if name.startswith(prefix) and os.path.isdir(os.path.join(task_path, name))
+    ]
+
+    for dirname in filtered_folders:
+        path_name= os.path.join(task_path,dirname)
+        predictiion_photos_dir = os.path.join(path_name,'PhotoPredictions')
+        models_path = os.path.join(path_name, 'Models')
+        if not os.path.exists(predictiion_photos_dir):
+            os.mkdir(predictiion_photos_dir)
+
+        modelname = os.path.join(models_path, dirname+'.keras')
+        model = tf.keras.models.load_model(modelname, compile=False)
+
+
+
+
+
 
     # model = create_model_fn()
     # task = task_fn(model_basename + "_br", model, augment_brightness, BATCH_SIZE )
