@@ -17,6 +17,7 @@ from matplotlib import pyplot as plt
 from keras.metrics import Accuracy, CategoricalAccuracy
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 import math
+from skimage.transform import resize
 # import datetime as dt
 
 import numpy as np
@@ -69,7 +70,7 @@ def psnr(super_resolution, high_resolution):
 
 
 class DLTrainer:
-    def __init__(self, task_path, model_name, model ):
+    def __init__(self, task_path, model_name, model=None ):
         self.task_path=task_path
         self.model_name=model_name
         self.model_path=os.path.join(task_path, model_name)
@@ -174,16 +175,22 @@ class DLTrainer:
             if index + 1 >= N:  # Stop after all batches
                 break
 
-    def predict(self, img_source, postprocess):
+    def predict(self, img_source, postprocess, resX=0, resY=0, prediction_dest=None):
         index=1
         print('Predicting images from dir:', img_source)
         N = len(os.listdir(img_source))
         for filename in os.listdir(img_source):
             try:
                 #data_x = inputImgReader(os.path.join(img_source, filename))
-                data_x = cv.imread(os.path.join(img_source, filename)).astype('float32') / 255.0
+                data_x = cv.imread(os.path.join(img_source, filename)).astype(np.float32)/255.0
+                if resX != 0:
+                    data_x = resize(data_x, (self.model.input.shape[1], self.model.input.shape[2]), anti_aliasing=True)
+
                 data_y = self.model.predict(np.expand_dims(data_x,0))
-                postprocess(os.path.join(self.predictions_path, filename), data_x, data_y[0,])
+                if prediction_dest:
+                    postprocess(os.path.join(prediction_dest, filename), data_x, data_y[0,])
+                else:
+                    postprocess(os.path.join(self.predictions_path, filename), data_x, data_y[0,])
                 # cv.imwrite(os.path.join(prediction_path, filename) + '_X.png',data_x*255 )
                 # cv.imwrite(os.path.join(prediction_path, filename) + '_PRED.png', postprocess(data_x, data_y[0,]) * 255)
             except Exception as e:

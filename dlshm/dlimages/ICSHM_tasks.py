@@ -9,7 +9,8 @@ from keras.src.losses import CategoricalFocalCrossentropy
 from dlshm.dlgenerators.generators import DataSource, DataGeneratorFromNumpyFiles
 from dlshm.dlimages.augmentations import augment_brightness, augment_contrast, augment_gamma, augment_noise, \
     augment_rotation, augment_cutmix, augment_all, augment_flip
-from dlshm.dlimages.postprocess import test_dmg_segmentation, write_prediction_segmentated2
+from dlshm.dlimages.postprocess import test_dmg_segmentation, write_prediction_segmentated2, \
+    write_prediction_segmentated3
 from dlshm.dlmodels import trainer
 from dlshm.dlmodels.loss_functions import weighted_categorical_crossentropy, dice_loss, tversky_loss, \
     wrapped_tversky_loss, weighted_tversky_loss, focal_tversky_loss, weighted_focal_tversky_loss
@@ -168,7 +169,7 @@ def multi_augmentation_transfer_learning( model_basename, create_model_fn, task_
         del model
         gc.collect()
 
-def predict_photos_in_all_tasks(task_path,photos_test_path):
+def predict_photos_in_all_tasks(task_path,photos_test_path,resX,resY):
     os.listdir(task_path)
     prefix = 'ICSHM_STRUCT'
 
@@ -177,20 +178,16 @@ def predict_photos_in_all_tasks(task_path,photos_test_path):
         if name.startswith(prefix) and os.path.isdir(os.path.join(task_path, name))
     ]
 
+    photos_list = os.listdir(photos_test_path)
+
     for dirname in filtered_folders:
+        print('Photo prediction in task :',dirname)
         path_name= os.path.join(task_path,dirname)
-        predictiion_photos_dir = os.path.join(path_name,'PhotoPredictions')
-        models_path = os.path.join(path_name, 'Models')
-        if not os.path.exists(predictiion_photos_dir):
-            os.mkdir(predictiion_photos_dir)
-
-        modelname = os.path.join(models_path, dirname+'.keras')
-        model = tf.keras.models.load_model(modelname, compile=False)
-
-
-
-
-
+        trainer = DLTrainer(task_path, dirname)
+        prediction_photos_dir = os.path.join(path_name,'PhotoPredictions')
+        if not os.path.exists(prediction_photos_dir):
+            os.mkdir(prediction_photos_dir)
+        trainer.predict(photos_test_path,write_prediction_segmentated3,resX,resY,prediction_photos_dir)
 
     # model = create_model_fn()
     # task = task_fn(model_basename + "_br", model, augment_brightness, BATCH_SIZE )

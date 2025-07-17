@@ -39,9 +39,10 @@ from dlshm.dlimages.ICSHM_tasks import ICSHM_structural_task, ICSHM_damage_task,
 RES_X=640
 RES_Y=320
 BATCH_SIZE=16
-TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
-SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
-PHOTO_TEST_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSet'
+TASK_PATH = '/home/piotrek/Computations/Ai/ICSHM'
+SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+#PHOTO_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSet'
+PHOTO_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Images'
 
 # data_manager = ICSHMDataManager(SOURCE_PATH)
 # data_manager.convert_folders_data_to_numpy_format( ICSHM_STRUCT_Converter(RES_X,RES_Y),
@@ -169,7 +170,7 @@ keras.config.disable_traceback_filtering()
 # create_dmg_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_dmg_task_fn, BATCH_SIZE  )
 
-predict_photos_in_all_tasks(TASK_PATH,PHOTO_TEST_PATH)
+predict_photos_in_all_tasks(TASK_PATH,PHOTO_TEST_PATH,RES_X,RES_Y)
 
 #
 #
