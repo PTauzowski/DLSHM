@@ -29,7 +29,7 @@ from dlshm.dlresults.postprocess import prepare_excel_multiaugmented_results
 import tensorflow as tf
 import segmentation_models as sm
 from dlshm.dlimages.ICSHM_tasks import ICSHM_structural_task, ICSHM_damage_task, multi_augmentation_training_structural, \
-    multi_augmentation_transfer_learning, predict_photos_in_all_tasks
+    multi_augmentation_transfer_learning, predict_photos_in_all_tasks, compute_measures
 
 # available models: ['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152', 'seresnet18', 'seresnet34', 'seresnet50', 'seresnet101',
 #                   'seresnet152', 'seresnext50', 'seresnext101', 'senet154', 'resnext50', 'resnext101', 'vgg16', 'vgg19', 'densenet121',
@@ -43,6 +43,7 @@ TASK_PATH = '/home/piotrek/Computations/Ai/ICSHM'
 SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
 #PHOTO_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSet'
 PHOTO_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Images'
+PHOTO_NUMPY_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSet'
 
 # data_manager = ICSHMDataManager(SOURCE_PATH)
 # data_manager.convert_folders_data_to_numpy_format( ICSHM_STRUCT_Converter(RES_X,RES_Y),
@@ -50,6 +51,11 @@ PHOTO_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Images'
 #                                                    '/Users/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Masks',
 #                                                    PHOTO_TEST_PATH)
 
+data_manager = ICSHMDataManager(SOURCE_PATH)
+data_manager.convert_folders_data_to_numpy_format( ICSHM_STRUCT_Converter(320,160),
+                                                   '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Images',
+                                                   '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Masks',
+                                                   PHOTO_NUMPY_TEST_PATH)
 
 
 
@@ -94,6 +100,11 @@ augmentations_all =  (("all", "_all", augment_all),)
 import keras
 keras.config.disable_traceback_filtering()
 
+TASK_NAME = 'ICSHM_STRUCT_UNET_rn152_small_all'
+#predict_photos_in_all_tasks(TASK_PATH,TASK_NAME,PHOTO_TEST_PATH,320,160)
+compute_measures(TASK_PATH, TASK_NAME, PHOTO_NUMPY_TEST_PATH, 320, 160,[1, 1, 1, 1],[ "Nonstructural", "Slab", "Beam", "Column" ])
+
+
 # TASK_NAME='ICSHM_STRUCT_BASNet_LR45cos2_all'
 # #model = sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
 # model = BASNet( input_shape=(RES_Y, RES_X, 3), out_classes=4 )  # Create mod
@@ -112,7 +123,7 @@ keras.config.disable_traceback_filtering()
 # TASK_NAME='ICSHM_STRUCT_UNET_rn18'
 # create_unet_fn = lambda: sm.Unet("resnet18", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
 # #create_unet_fn = lambda: custom_unet(input_shape=(RES_Y,RES_X,3), num_layers=6, filters=24, num_classes=4, output_activation="softmax")
-# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
+# create_struct_task_fn = lambda model_basename, model, augmen##tation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE  )
 #
 #
@@ -170,8 +181,6 @@ keras.config.disable_traceback_filtering()
 # create_dmg_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_dmg_task_fn, BATCH_SIZE  )
 
-predict_photos_in_all_tasks(TASK_PATH,PHOTO_TEST_PATH,RES_X,RES_Y)
-
 #
 #
 # TASK_NAME='ICSHM_STRUCT_DEEPLABV3p'
@@ -195,6 +204,11 @@ predict_photos_in_all_tasks(TASK_PATH,PHOTO_TEST_PATH,RES_X,RES_Y)
 # create_model_fn = lambda:  keras_hub.models.DeepLabV3Backbone( image_encoder=image_encoder, projection_filters=48, low_level_feature_key="P2", spatial_pyramid_pooling_key="P5", upsampling_size = 8, dilation_rates = [6, 12, 18] )
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations )
+
+# TASK_NAME='ICSHM_STRUCT_DEEPLABV3p_rn152_1'
+# create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Struct', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+# multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
 
 
 # TASK_NAME='ICSHM_STRUCT_UNET_efnb4'

@@ -169,25 +169,31 @@ def multi_augmentation_transfer_learning( model_basename, create_model_fn, task_
         del model
         gc.collect()
 
-def predict_photos_in_all_tasks(task_path,photos_test_path,resX,resY):
-    os.listdir(task_path)
-    prefix = 'ICSHM_STRUCT'
+def predict_photos_in_all_tasks(task_path,task_name, photos_test_path,resX,resY):
+    print('Photo prediction in task :',task_name)
+    path_name= os.path.join(task_path,task_name)
+    trainer = DLTrainer(task_path, task_name)
+    prediction_photos_dir = os.path.join(path_name,'PhotoPredictions')
+    if not os.path.exists(prediction_photos_dir):
+        os.mkdir(prediction_photos_dir)
+    trainer.predict(photos_test_path,write_prediction_segmentated3,resX,resY,prediction_photos_dir)
 
-    filtered_folders = [
-        name for name in os.listdir(task_path)
-        if name.startswith(prefix) and os.path.isdir(os.path.join(task_path, name))
-    ]
+def compute_measures(task_path, task_name, photos_numpy_test_path, resX, resY, weights, class_names):
+    print('Photos measures in task :', task_name)
+    path_name = os.path.join(task_path, task_name)
+    npx_files = [os.path.join(photos_numpy_test_path, name) for name in os.listdir(photos_numpy_test_path)]
+    nclasses = len(weights)
+    test_gen = DataGeneratorFromNumpyFiles(npx_files, 1, (resY, resX),
+                                           (resY, resX), 3, nclasses, shuffle=False)
+    trainer = DLTrainer(task_path, task_name)
+    dfs, df = trainer.compute_gen_measures(test_gen, np.array(weights), class_names)
+    prediction_photos_dir = os.path.join(path_name, 'PhotoPredictions')
+    if not os.path.exists(prediction_photos_dir):
+        os.mkdir(prediction_photos_dir)
+    with pd.ExcelWriter(os.path.join(prediction_photos_dir, task_name + '_metrics.xlsx'), engine='openpyxl') as writer:
+        dfs.to_excel(writer, sheet_name='ICSHM', index=False)
+        df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
 
-    photos_list = os.listdir(photos_test_path)
-
-    for dirname in filtered_folders:
-        print('Photo prediction in task :',dirname)
-        path_name= os.path.join(task_path,dirname)
-        trainer = DLTrainer(task_path, dirname)
-        prediction_photos_dir = os.path.join(path_name,'PhotoPredictions')
-        if not os.path.exists(prediction_photos_dir):
-            os.mkdir(prediction_photos_dir)
-        trainer.predict(photos_test_path,write_prediction_segmentated3,resX,resY,prediction_photos_dir)
 
     # model = create_model_fn()
     # task = task_fn(model_basename + "_br", model, augment_brightness, BATCH_SIZE )
