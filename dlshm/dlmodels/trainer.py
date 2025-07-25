@@ -82,6 +82,8 @@ class DLTrainer:
         self.model_pathname = os.path.join(self.models_path, self.model_name + '.keras')
         if model==None:
             self.model = self.load_model()
+        else:
+            self.model=model
 
     def load_model(self):
         model=None

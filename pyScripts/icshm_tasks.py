@@ -100,9 +100,87 @@ augmentations_all =  (("all", "_all", augment_all),)
 import keras
 keras.config.disable_traceback_filtering()
 
-TASK_NAME = 'ICSHM_STRUCT_UNET_rn152_small_all'
+#TASK_NAME = 'ICSHM_STRUCT_UNET_rn152_small_all'
 #predict_photos_in_all_tasks(TASK_PATH,TASK_NAME,PHOTO_TEST_PATH,320,160)
-compute_measures(TASK_PATH, TASK_NAME, PHOTO_NUMPY_TEST_PATH, 320, 160,[1, 1, 1, 1],[ "Nonstructural", "Slab", "Beam", "Column" ])
+#compute_measures(TASK_PATH, TASK_NAME, PHOTO_NUMPY_TEST_PATH, 320, 160,[1, 1, 1, 1],[ "Nonstructural", "Slab", "Beam", "Column" ])
+
+
+
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_1'
+# #model = sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
+# create_struct_task = ICSHM_damage_task(model=None, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, augmentation_fn=augment_all, LEARNING_RATE=0.00005)
+# create_struct_task.compute_all_sets_measures()
+#
+# TASK_NAME='ICSHM_DMG_UNET_efnb5_4_weighted_focal_tversky4'
+# #model = sm.Unet("inceptionv3", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
+# create_struct_task = ICSHM_damage_task(model=None, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, augmentation_fn=augment_all, LEARNING_RATE=0.00005)
+# create_struct_task.compute_all_sets_measures()
+
+# TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_all_metrics'
+# create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+# multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_1'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_2'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_3'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_4'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_5'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_6'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_7'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_8'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_all_metrics_9'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+#
+
+
+
+#
+#
+# TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky'
+# model = reate_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+# create_struct_task = ICSHM_damage_task(model=None, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, augmentation_fn=augment_all, LEARNING_RATE=0.00005)
+# create_struct_task.compute_all_sets_measures()
+#
+# TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152'
+# model = reate_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+# create_struct_task = ICSHM_damage_task(model=None, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=TASK_NAME, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BATCH_SIZE, augmentation_fn=augment_all, LEARNING_RATE=0.00005)
+# create_struct_task.compute_all_sets_measures()
+
 
 
 # TASK_NAME='ICSHM_STRUCT_BASNet_LR45cos2_all'
