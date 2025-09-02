@@ -78,9 +78,45 @@ class ICSHM_Task:
             with pd.ExcelWriter(os.path.join(excel_path,self.TASK_NAME+'_metrics.xlsx'), engine='openpyxl') as writer:
                  dfs.to_excel(writer, sheet_name='ICSHM', index=False)
                  df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+
+            dfs_tr, df_tr = self.trainer.compute_gen_measures(train_gen, self.class_weights, self.class_names)
+            dfs_v, df_v = self.trainer.compute_gen_measures(validation_gen, self.class_weights, self.class_names)
+            dfs_ts, df_ts = self.trainer.compute_gen_measures(test_gen, self.class_weights, self.class_names)
+            excel_path = self.trainer.create_model_dir('ExcelResults')
+            with pd.ExcelWriter(os.path.join(excel_path, self.TASK_NAME + '_all_sets_metrics.xlsx'),
+                                engine='openpyxl') as writer:
+                dfs_ts.to_excel(writer, sheet_name='ICSHM', index=False)
+                df_ts.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+                df_tr.to_excel(writer, sheet_name='ICSHM', index=False, startrow=20, startcol=0)
+                df_v.to_excel(writer, sheet_name='ICSHM', index=False, startrow=30, startcol=0)
             self.trainer.predict('/home/piotrek/Computations/Ai/ICSHM/Photos/PredictionPhotos',write_prediction_segmentated2)
         else:
             print('Folder ',self.TASK_NAME,' exists. Model not trained')
+
+        return ~self.trainer.model_dir_exists
+
+    def compute_all_sets_measures(self):
+        self.dataSource = DataSource(self.TRAIN_PATH, train_ratio=0.70, validation_ratio=0.15 )
+        self.trainer = DLTrainer(self.TASK_PATH, self.TASK_NAME, self.model)
+        if self.trainer.model_dir_exists:
+            train_set, validation_set = self.dataSource.get_training_data()
+            train_gen = DataGeneratorFromNumpyFiles(train_set, self.BATCH_SIZE, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES, augmentation_fn=self.augmentation_fn)
+            validation_gen = DataGeneratorFromNumpyFiles(validation_set, 1, (self.RES_Y, self.RES_X),(self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES,shuffle=False)
+            test_gen = DataGeneratorFromNumpyFiles(self.dataSource.get_test_files(), 1, (self.RES_Y, self.RES_X), (self.RES_Y, self.RES_X), self.N_CHANNELS, self.N_CLASSES,shuffle=False)
+            model = self.trainer.model  # Gdyby model powyżej nie był podany ("none" - jak w komentarzu), to tutaj go "wydobywamy"
+
+            dfs_tr, df_tr = self.trainer.compute_gen_measures(train_gen, self.class_weights, self.class_names)
+            dfs_v, df_v = self.trainer.compute_gen_measures(validation_gen, self.class_weights, self.class_names)
+            dfs_ts, df_ts = self.trainer.compute_gen_measures(test_gen,self.class_weights, self.class_names)
+            excel_path = self.trainer.create_model_dir('ExcelResults')
+            with pd.ExcelWriter(os.path.join(excel_path,self.TASK_NAME+'_all_sets_metrics.xlsx'), engine='openpyxl') as writer:
+                 dfs_ts.to_excel(writer, sheet_name='ICSHM', index=False)
+                 df_ts.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+                 df_tr.to_excel(writer, sheet_name='ICSHM', index=False, startrow=20, startcol=0)
+                 df_v.to_excel(writer, sheet_name='ICSHM', index=False, startrow=30, startcol=0)
+
+        else:
+            print('Folder ',self.TASK_NAME,' not exists. Model not trained')
 
         return ~self.trainer.model_dir_exists
 
@@ -193,6 +229,12 @@ def compute_measures(task_path, task_name, photos_numpy_test_path, resX, resY, w
     with pd.ExcelWriter(os.path.join(prediction_photos_dir, task_name + '_metrics.xlsx'), engine='openpyxl') as writer:
         dfs.to_excel(writer, sheet_name='ICSHM', index=False)
         df.to_excel(writer, sheet_name='ICSHM', index=False, startrow=10, startcol=0)
+
+def compute_all_sets_measures(task_path, task_name, photos_numpy_test_path, resX, resY, weights, class_names):
+    print('Photos measures in task :', task_name)
+    path_name = os.path.join(task_path, task_name)
+    trainer = DLTrainer(task_path, task_name)
+
 
 
     # model = create_model_fn()

@@ -83,6 +83,8 @@ class DLTrainer:
         self.model=model
         if model==None:
             self.model = self.load_model()
+        else:
+            self.model=model
 
 
     def load_model(self):
