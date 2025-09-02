@@ -39,11 +39,11 @@ from dlshm.dlimages.ICSHM_tasks import ICSHM_structural_task, ICSHM_damage_task,
 RES_X=640
 RES_Y=320
 BATCH_SIZE=16
-TASK_PATH = '/home/piotrek/Computations/Ai/ICSHM'
-SOURCE_PATH = '/home/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
-#PHOTO_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSet'
-PHOTO_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Images'
-PHOTO_NUMPY_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSet'
+TASK_PATH = '/Users/piotrek/Computations/Ai/ICSHM'
+SOURCE_PATH = '/Users/piotrek/Computations/Ai/Data/Tokaido_dataset_share'
+#PHOTO_TEST_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSet'
+PHOTO_TEST_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Images'
+PHOTO_NUMPY_TEST_PATH = '/Users/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSet'
 
 # data_manager = ICSHMDataManager(SOURCE_PATH)
 # data_manager.convert_folders_data_to_numpy_format( ICSHM_STRUCT_Converter(RES_X,RES_Y),
@@ -51,12 +51,12 @@ PHOTO_NUMPY_TEST_PATH = '/home/piotrek/Computations/Ai/ICSHM/TestSet/PhotoTestSe
 #                                                    '/Users/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Masks',
 #                                                    PHOTO_TEST_PATH)
 
-data_manager = ICSHMDataManager(SOURCE_PATH)
-data_manager.convert_folders_data_to_numpy_format( ICSHM_STRUCT_Converter(320,160),
-                                                   '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Images',
-                                                   '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Masks',
-                                                   PHOTO_NUMPY_TEST_PATH)
-
+# data_manager = ICSHMDataManager(SOURCE_PATH)
+# data_manager.convert_folders_data_to_numpy_format( ICSHM_STRUCT_Converter(320,160),
+#                                                    '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Images',
+#                                                    '/home/piotrek/Computations/Ai/ICSHM/TestSet/Photos/Masks',
+#                                                    PHOTO_NUMPY_TEST_PATH)
+#
 
 
 augmentations =  (  ("none", "_none", None),
@@ -100,9 +100,9 @@ augmentations_all =  (("all", "_all", augment_all),)
 import keras
 keras.config.disable_traceback_filtering()
 
-TASK_NAME = 'ICSHM_STRUCT_UNET_rn152_small_all'
+#TASK_NAME = 'ICSHM_STRUCT_UNET_rn152_small_all'
 #predict_photos_in_all_tasks(TASK_PATH,TASK_NAME,PHOTO_TEST_PATH,320,160)
-compute_measures(TASK_PATH, TASK_NAME, PHOTO_NUMPY_TEST_PATH, 320, 160,[1, 1, 1, 1],[ "Nonstructural", "Slab", "Beam", "Column" ])
+#compute_measures(TASK_PATH, TASK_NAME, PHOTO_NUMPY_TEST_PATH, 320, 160,[1, 1, 1, 1],[ "Nonstructural", "Slab", "Beam", "Column" ])
 
 
 # TASK_NAME='ICSHM_STRUCT_BASNet_LR45cos2_all'
@@ -134,11 +134,11 @@ compute_measures(TASK_PATH, TASK_NAME, PHOTO_NUMPY_TEST_PATH, 320, 160,[1, 1, 1,
 # multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE  )
 
 
-#TASK_NAME='ICSHM_STRUCT_UNET_rn101'
+# TASK_NAME='ICSHM_STRUCT_UNET_rn101_bat'
 # create_unet_fn = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=4, activation="softmax")
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_structural_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, augmentation_fn=augmentation_fn)
-# multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE  )
-#
+# multi_augmentation_training_structural(TASK_NAME, create_unet_fn, create_struct_task_fn, BATCH_SIZE,augmentations=augmentations_all  )
+# #
 #
 # TASK_NAME='ICSHM_DMG_UNET_rn101'
 # create_unet_fn = lambda: sm.Unet("resnet101", input_shape=(RES_Y, RES_X, 3), encoder_weights="imagenet", classes=3, activation="softmax")
@@ -272,10 +272,10 @@ compute_measures(TASK_PATH, TASK_NAME, PHOTO_NUMPY_TEST_PATH, 320, 160,[1, 1, 1,
 # create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
 # multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
 #
-# TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_3'
-# create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
-# create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
-# multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
+TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_bat'
+create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )
+create_struct_task_fn = lambda model_basename, model, augmentation_fn, BS : ICSHM_damage_task(model=model, TASK_PATH=TASK_PATH, SOURCE_PATH=SOURCE_PATH, TASK_NAME=model_basename, TRAIN_DIR='Dmg', RES_X=RES_X, RES_Y=RES_Y, BATCH_SIZE=BS, LEARNING_RATE=0.00004)
+multi_augmentation_training_structural(TASK_NAME, create_model_fn, create_struct_task_fn, BATCH_SIZE , augmentations=augmentations_all )
 #
 # TASK_NAME='ICSHM_DMG_DEEPLABV3p_rn152_weighted_focal_tversky_4'
 # create_model_fn = lambda:  create_deeplab_model( "resnet_152_imagenet", 3 )

@@ -80,8 +80,10 @@ class DLTrainer:
         self.predictions_path = self.create_model_dir('Predictions')
         self.mosaic_predictions_path = self.create_model_dir('MosaicPredictions')
         self.model_pathname = os.path.join(self.models_path, self.model_name + '.keras')
+        self.model=model
         if model==None:
             self.model = self.load_model()
+
 
     def load_model(self):
         model=None

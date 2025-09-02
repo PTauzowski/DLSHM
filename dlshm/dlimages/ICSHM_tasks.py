@@ -22,7 +22,7 @@ from pyScripts.icshm_rgb_batch import LEARNING_RATE
 
 class ICSHM_Task:
     def __init__(self, model, TASK_PATH, SOURCE_PATH, TASK_NAME, RES_X=640, RES_Y=320, N_CHANNELS=3, N_CLASSES=4, N_LAYERS=6, N_FILTERS=24, BATCH_SIZE=32, EPOCHS=200, LEARNING_RATE = 0.0001, augmentation_fn=None):
-        self.model=model
+        self.model=model[0]
         self.RES_X = RES_X
         self.RES_Y = RES_Y
         self.N_CHANNELS = N_CHANNELS
@@ -146,7 +146,7 @@ def multi_augmentation_training_structural(model_basename, create_model_fn, task
     tf.keras.backend.clear_session()
     print("* MULTI augmented training for model :",model_basename )
     for augmentation in augmentations:
-        model = create_model_fn()[0]
+        model = create_model_fn()
         task = task_fn( model_basename, model, augmentation, BATCH_SIZE)
         task.train()
         del model
